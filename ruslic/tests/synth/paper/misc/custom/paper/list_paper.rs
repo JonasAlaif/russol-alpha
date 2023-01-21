@@ -36,17 +36,16 @@ impl<T> Node<T> {
       }
     }
 
-    #[synth]
-    // #[ensures((^self).len() == self.len() + 1)]
+    #[ensures((^self).len() == self.len() + 1)]
     pub fn push_len(&mut self, elem: T) {
-      // match self {
-      //   Node::Nil => {
-      //     let next = Box::new(Node::Nil);
-      //     let new = Node::Cons { elem, next };
-      //     *self = new
-      //   }
-      //   Node::Cons { next, .. } => next.push_len(elem),
-      // }
+      match self {
+        Node::Nil => {
+          let next = Box::new(Node::Nil);
+          let new = Node::Cons { elem, next };
+          *self = new
+        }
+        Node::Cons { next, .. } => next.push_len(elem),
+      }
     }
 
     #[ensures(match ^self {

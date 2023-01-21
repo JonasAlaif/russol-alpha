@@ -32,7 +32,6 @@ impl Node<i32> {
 }
 
 /// Unsupported
-#[synth]
 #[requires(list.is_sorted())]
 #[ensures((^list).is_sorted())]
 // #[ensures(match (&*list, &^list) {

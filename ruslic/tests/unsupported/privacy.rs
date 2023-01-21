@@ -13,7 +13,6 @@ mod m {
 }
 
 // Cannot access private field - must mutate argument
-#[synth]
 #[ensures(result.0 == 42)]
 fn foo(c: m::Tuple) -> m::Tuple {
     let mut c = c;
@@ -22,7 +21,6 @@ fn foo(c: m::Tuple) -> m::Tuple {
 }
 
 // Cannot access private type
-#[synth]
 #[ensures(result.0.x == 4)]
 #[ensures(result.1.x == 2)]
 fn bar(c: m::HasPriv) -> m::Twice {

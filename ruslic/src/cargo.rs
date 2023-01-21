@@ -34,7 +34,16 @@ where
         .status()
         .expect("could not run cargo");
 
-    if exit_status.success() {
+    if !exit_status.success() {
+        return Err(exit_status.code().unwrap_or(-1));
+    }
+
+    // Run fmt after `RUSLIC_SUBST_RESULT`
+    let exit_status = std::process::Command::new("cargo")
+        .arg("fmt")
+        .status()
+        .expect("could not run cargo");
+    if !exit_status.success() {
         Ok(())
     } else {
         Err(exit_status.code().unwrap_or(-1))
