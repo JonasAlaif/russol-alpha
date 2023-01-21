@@ -1,0 +1,7 @@
+[package]
+name = "russol-contracts"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+russol-macros = { path = "../russol-macros" }

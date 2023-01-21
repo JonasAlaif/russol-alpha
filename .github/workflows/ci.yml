@@ -1,0 +1,70 @@
+name: Cargo Build & Test
+
+on:
+  push:
+  pull_request:
+
+env: 
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    name: Test on local files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # > git clone --recursive https://github.com/JonasAlaif/russol-alpha.git
+        with:
+          submodules: 'recursive'
+      - name: Install Z3
+      # Ensure that `z3` is in your path
+        uses: pavpanchekha/setup-z3@v0.3.0
+      - run: z3 --version
+      - name: Setup JDK
+      # Ensure that java (e.g. https://adoptium.net/temurin/releases) and sbt (https://www.scala-sbt.org/) work
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: sbt
+      - name: Cache cargo/rustc
+        uses: Swatinem/rust-cache@v2.0.0
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+      # Install rust (https://www.rust-lang.org/tools/install), the correct version will automatically be downloaded
+      # To run on a single file use: `cargo run /path/to/file.rs`
+        run: cargo test --package ruslic --test ci -- all_tests --exact --nocapture
+
+  test_crates:
+    # if: ${{ false }}  # disable for now
+    strategy:
+      matrix:
+        version: [all] # [0, 1, 2, 3]
+      fail-fast: false
+    name: Test on crates ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Install Z3
+        uses: pavpanchekha/setup-z3@v0.3.0
+      - run: z3 --version
+      - name: Setup JDK
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: sbt
+      - name: Cache cargo/rustc
+        uses: Swatinem/rust-cache@v2.0.0
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --package ruslic --test top_crates -- top_crates_${{ matrix.version }} --exact --nocapture
+      - name: Upload failing cases
+        uses: actions/upload-artifact@v3
+        with:
+          name: failing-fns-${{ matrix.version }}
+          path: suslik/tmp-*/
