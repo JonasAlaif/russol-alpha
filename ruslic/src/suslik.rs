@@ -620,9 +620,23 @@ impl Signature {
         let expr = et.translate_expr(&sig.pure_pre, Vec::new(), None);
         pre.phi.0.extend(expr.flatten());
 
-        let result = stt.translate_sapp(false, "result", sig.ret)
-                    .map_err(|reason| Unsupported { in_main, reason })?;
-        let sigma = Sigma(vec![result]);
+        // TODO: remove special treatment of unit
+        let result = if !sig.ret.is_unit() {
+            Some(
+                stt.translate_sapp(false, "result", sig.ret)
+                    .map_err(|reason| Unsupported { in_main, reason })?,
+            )
+        } else {
+            None
+        };
+        let sigma = if let Some(result) = result {
+            Sigma(vec![result])
+        } else {
+            Sigma::empty()
+        };
+        // let result = stt.translate_sapp(false, "result", sig.ret)
+        //             .map_err(|reason| Unsupported { in_main, reason })?;
+        // let sigma = Sigma(vec![result]);
         let mut post = Assertion {
             phi: Phi::empty(),
             sigma,
