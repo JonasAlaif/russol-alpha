@@ -5,8 +5,8 @@ extern crate rustc_errors;
 use ruslic::suslik::SynthesisResult;
 use rustc_errors::ErrorGuaranteed;
 
-fn main() {
-    let _ = rustc_driver::catch_fatal_errors(|| {
+fn main() -> Result<(), ErrorGuaranteed> {
+    rustc_driver::catch_fatal_errors(|| {
         match filter_args() {
             // Skip synth
             (args, _, true) => {
@@ -15,19 +15,18 @@ fn main() {
                     .status()
                     .unwrap();
                 assert!(status.success());
-                Ok::<_, ErrorGuaranteed>(())
             }
             // Do synth
             (args, is_cargo, false) => {
                 let timeout = std::env::var("RUSLIC_TIMEOUT")
                     .map(|v| v.parse::<u64>().unwrap())
                     .unwrap_or(1_000_000);
-                let res = ruslic::run_on_file(args, timeout, is_cargo)?;
-                summarise(res.values().collect());
-                Ok(())
+                if let Ok(res) = ruslic::run_on_file(args, timeout, is_cargo) {
+                    summarise(res.values().collect());
+                }
             }
         }
-    });
+    })
 }
 
 fn filter_args() -> (Vec<String>, bool, bool) {

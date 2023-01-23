@@ -676,6 +676,10 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                     "Pure functions calls with exactly one argument currently supported ({:?}).",
                     id
                 );
+                assert!(
+                    self.pure_fns.contains_key(&id),
+                    "Used a non-pure fn ({id:?}) in specification!"
+                );
                 let mut pure_fn = self.pure_fns[id].clone();
                 let mut substs = subst_generics::SubstFolder::from_substs_ref(self.tcx, substs);
                 pure_fn.expr.subst(&mut substs);
