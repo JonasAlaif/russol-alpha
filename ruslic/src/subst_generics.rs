@@ -91,8 +91,7 @@ impl<'tcx> SubstFinder<'tcx> {
                 }
                 Ok(())
             }
-            // r types are never ref
-            (TyKind::Ref(_, l, _), _) => self.visit_ty_tuple(*l, r),
+            (TyKind::Ref(_, l, _), TyKind::Ref(_, r, _)) => self.visit_ty_tuple(*l, *r),
             (TyKind::Tuple(l), TyKind::Tuple(r)) if l.len() == r.len() => {
                 for (l, r) in l.iter().zip(r.iter()) {
                     self.visit_ty_tuple(l, r)?;
@@ -263,7 +262,15 @@ impl<'tcx> SGenericsCollector<'tcx> {
             if !all_possible_subs {
                 for synth_ty in &self.synth_tys {
                     let mut sf = SubstFinder::new();
-                    if let Ok(()) = sf.visit_ty_tuple(*efn_ty, *synth_ty) {
+                    // Peel refs for fn arg since these can be created (just borrow to create arg)
+                    let (mut efn_ty, mut synth_ty) = (*efn_ty, *synth_ty);
+                    while let TyKind::Ref(_, inner_ty, _) = efn_ty.kind() {
+                        efn_ty = *inner_ty;
+                        if let TyKind::Ref(_, inner_ty, _) = synth_ty.kind() {
+                            synth_ty = *inner_ty;
+                        }
+                    }
+                    if let Ok(()) = sf.visit_ty_tuple(efn_ty, synth_ty) {
                         for (param, ty) in sf.param_subs {
                             pc.params.get_mut(&param).unwrap().insert(ty);
                         }
