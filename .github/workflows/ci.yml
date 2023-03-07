@@ -40,7 +40,7 @@ jobs:
     # if: ${{ false }}  # disable for now
     strategy:
       matrix:
-        version: [all] # [0, 1, 2, 3]
+        version: [0, 1, 2, 3]
       fail-fast: false
     name: Test on crates ${{ matrix.version }}
     runs-on: ubuntu-latest
