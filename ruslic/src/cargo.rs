@@ -19,11 +19,11 @@ where
 
     // Remove the "russol" argument when `cargo-russol` is invoked as
     // `cargo --cflag russol` (note the space in `cargo russol` rather than a `-`)
-    let args = args.skip_while(|arg| arg == "russol");
+    let args: Vec<_> = args.skip_while(|arg| arg == "russol").collect();
 
     let exit_status = std::process::Command::new("cargo")
         .arg("check")
-        .args(args)
+        .args(&args)
         // Otherwise `rust-analyzer` might run `cargo check` and so this one would do nothing (cached result)
         .env("CARGO_INCREMENTAL", "false")
         .env("RUST_TOOLCHAIN", get_rust_toolchain_channel())
@@ -39,9 +39,11 @@ where
         return Err(exit_status.code().unwrap_or(-1));
     }
 
+    let path = args.iter().find(|arg| arg.starts_with("--manifest-path="));
     // Run fmt after `RUSLIC_SUBST_RESULT`
     let exit_status = std::process::Command::new("cargo")
         .arg("fmt")
+        .args(path)
         .status()
         .expect("could not run cargo");
     if !exit_status.success() {
