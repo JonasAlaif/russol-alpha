@@ -208,6 +208,8 @@ fn run_on_crate(name: &str, version: &str) -> Vec<SynthesisResult> {
         .env("RUSLIC_SUBST_RESULT", "true")
         .env("RUSLIC_PRINT_SLN_ABOVE", "1")
         .env("RUSLIC_SUMMARISE_JSON", "true")
+        .env("RUSLIC_OUTPUT_TRACE", "true")
+        .env("RUSLIC_SUMMARISE", "true")
         .current_dir(&dirname)
         .stdout(std::process::Stdio::piped())
         .spawn()

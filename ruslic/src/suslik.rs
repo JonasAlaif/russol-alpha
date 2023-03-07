@@ -257,10 +257,18 @@ impl Solved {
             .map(|v| v.parse::<usize>().unwrap())
             .unwrap_or(0);
         let idx = &mut 0;
-        let slns = sln
+        let slns: Vec<_> = sln
             .split("-----------------------------------------------------\n")
-            .flat_map(|sln| Solution::new(sln, idx, min_lines_print))
+            .flat_map(|sln| Solution::new(sln, idx))
             .collect();
+        for sln in &slns {
+            if sln.loc > min_lines_print {
+                if slns.len() > 1 {
+                    println!("[Solution #{}]", sln.idx);
+                }
+                print!("{}", sln.code);
+            }
+        }
         Self {
             is_trivial,
             exec_time,
@@ -328,25 +336,23 @@ pub struct Solution {
     pub ast_nodes: u64,
     pub ast_nodes_unsimp: u64,
     pub rule_apps: u64,
+    pub idx: usize,
 }
 impl Solution {
-    fn new(code: &str, idx: &mut usize, min_lines_print: usize) -> Option<Self> {
+    fn new(code: &str, idx: &mut usize) -> Option<Self> {
         let loc = code.lines().count();
         if loc <= 2 {
             return None;
         };
         let loc = loc - 2;
         assert!(code.starts_with("fn "), "{code}");
-        if loc > min_lines_print {
-            print!("[{idx}]{code}");
-        }
-        *idx += 1;
         let stats_str = code.split("@|").nth(1).unwrap();
         let mut stats_str = stats_str.split('|');
         let synth_time = stats_str.next().unwrap().parse().unwrap();
         let ast_nodes = stats_str.next().unwrap().parse().unwrap();
         let ast_nodes_unsimp = stats_str.next().unwrap().parse().unwrap();
         let rule_apps = stats_str.next().unwrap().parse().unwrap();
+        *idx += 1;
         Some(Self {
             code: code.to_string(),
             loc,
@@ -354,6 +360,7 @@ impl Solution {
             ast_nodes,
             ast_nodes_unsimp,
             rule_apps,
+            idx: *idx - 1,
         })
     }
 }
@@ -437,7 +444,7 @@ impl SuslikProgram {
         }
         let output_trace = std::env::var("RUSLIC_OUTPUT_TRACE")
             .map(|v| v.parse::<bool>().unwrap())
-            .unwrap_or(true);
+            .unwrap_or(false);
         if output_trace {
             let logfile = tmpdir.join(std::path::PathBuf::from("trace.json"));
             let logfile = logfile.to_str();

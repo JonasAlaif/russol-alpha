@@ -243,7 +243,7 @@ impl<'a, 'tcx> STyTranslator<'a, 'tcx> {
                                     self.translate_sapp(is_private, &field_name, ty)
                                 }).collect::<Result<Vec<_>, _>>()?;
                                 sigma.0.extend(fields);
-                                let item_name = if adt.did().is_local() {
+                                let item_name = if adt.did().is_local() || !self.use_full_names {
                                     if self.use_full_names {
                                         "crate::".to_string() + clean_name.split('<').next().unwrap()
                                     } else {

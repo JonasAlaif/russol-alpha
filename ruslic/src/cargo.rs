@@ -29,13 +29,9 @@ where
         .env("RUST_TOOLCHAIN", get_rust_toolchain_channel())
         .env("RUSTUP_TOOLCHAIN", get_rust_toolchain_channel())
         .env("RUSTC_WRAPPER", russol_rustc_path)
-        // Tries to find suslik_dir in parent dirs, so might work without:
-        // .env("SUSLIK_DIR", std::env::var("SUSLIK_DIR").expect("SUSLIK_DIR env var must be set"))
         .env("RUSLIC_OPTIMISTICALLY_ALLOW_PRIVATE_TYPES", "true")
-        .env("RUSLIC_FAIL_ON_UNSYNTH", "true")
-        .env("RUSLIC_USE_FULL_NAMES", "false")
         .env("RUSLIC_SUBST_RESULT", "true")
-        .env("RUSLIC_OUTPUT_TRACE", "false")
+        .env("RUSLIC_SUMMARISE", "true")
         .status()
         .expect("could not run cargo");
 

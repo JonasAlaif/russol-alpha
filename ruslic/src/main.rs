@@ -51,6 +51,9 @@ fn filter_args() -> (Vec<String>, bool, bool) {
 }
 
 fn summarise(res: Vec<&SynthesisResult>) {
+    if !std::env::var("RUSLIC_SUMMARISE").map(|v| v.parse().unwrap()).unwrap_or(false) {
+        return;
+    }
     let (mut unsupported, mut unsolvable, mut timeout, mut solved) = (0, 0, 0, Vec::new());
     for res in res.iter() {
         match res {
