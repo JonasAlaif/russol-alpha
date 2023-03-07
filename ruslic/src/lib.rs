@@ -47,6 +47,7 @@ use rustc_interface::{interface::Compiler, Queries};
 use suslik::SynthesisResult;
 
 struct CompilerCallbacks {
+    is_cargo: bool,
     timeout: u64,
     timings: FxHashMap<String, SynthesisResult>,
 }
@@ -84,7 +85,11 @@ impl Callbacks for CompilerCallbacks {
                 }
             }
         });
-        Compilation::Stop
+        if self.is_cargo {
+            Compilation::Continue
+        } else {
+            Compilation::Stop
+        }
     }
 }
 
@@ -145,6 +150,7 @@ pub fn run_on_file(
 
     // println!("Running with args: {:?}", args);
     let mut cc = CompilerCallbacks {
+        is_cargo,
         timeout,
         timings: FxHashMap::default(),
     };
