@@ -189,20 +189,25 @@ fn run_on_crate(name: &str, version: &str) -> Vec<SynthesisResult> {
     use std::io::Write;
     writeln!(file, "\n[workspace]").unwrap();
     let cwd = std::env::current_dir().unwrap();
+    let dir = if cfg!(debug_assertions) {
+        "debug"
+    } else {
+        "release"
+    };
     let ruslic = cwd.join(
-        ["..", "target", "debug", "ruslic"]
+        ["..", "target", dir, "ruslic"]
             .iter()
             .collect::<PathBuf>(),
     );
     let suslik = cwd.join(["..", "suslik"].iter().collect::<PathBuf>());
+    let timeout = std::env::var("RUSLIC_TIMEOUT").unwrap_or("300000".to_string());
     let mut child = std::process::Command::new("cargo")
         .arg("check")
         .env("RUSTC_WRAPPER", ruslic)
         .env("SUSLIK_DIR", suslik)
         .env("RUSLIC_USE_FULL_NAMES", "true")
         .env("RUSLIC_OPTIMISTICALLY_ALLOW_PRIVATE_TYPES", "true")
-        .env("RUSLIC_TIMEOUT", "10000")
-        // .env("RUSLIC_TIMEOUT", "300000") // [EVAL]
+        .env("RUSLIC_TIMEOUT", timeout)
         .env("RUSLIC_FAIL_ON_UNSYNTH", "false")
         .env("RUSLIC_SUBST_RESULT", "true")
         .env("RUSLIC_PRINT_SLN_ABOVE", "1")

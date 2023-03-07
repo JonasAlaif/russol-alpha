@@ -47,13 +47,11 @@ impl<T> Tree<T> {
         }
     }
 
-    #[helper] // [EVAL] Comment out line, but it takes >30s
     #[ensures(result.elems() == self.elems())]
     fn copy(&self) -> Self where T: Copy {
         ruslik!()
     }
 
-    #[helper] // [EVAL] Comment out line, but it takes >30s
     #[ensures(result.elems() == self.elems())]
     #[params("--closeWhileAbduce=false")]
     fn flatten(self) -> List<T> {

@@ -2,9 +2,6 @@ use std::{fmt::Display, path::PathBuf};
 
 use ruslic::suslik::{MeanStats, Solved, SynthesisResult};
 
-// const TIMEOUT: u64 = 300_000; // [EVAL]
-const TIMEOUT: u64 = 30_000;
-
 struct Category {
     dir: String,
     results: Vec<(String, SynthesisResult)>,
@@ -12,7 +9,7 @@ struct Category {
     // solutions: Vec<Solved>,
 }
 impl Category {
-    fn run_tests_in_dir(dir: PathBuf) -> Self {
+    fn run_tests_in_dir(dir: PathBuf, timeout: u64) -> Self {
         let mut cat = Self {
             dir: dir.file_name().unwrap().to_string_lossy().to_string(),
             results: Vec::new(),
@@ -34,7 +31,7 @@ impl Category {
                             "/name/of/binary".to_string(),
                             path.path().to_string_lossy().to_string(),
                         ],
-                        TIMEOUT,
+                        timeout,
                         false,
                     ) {
                         cat.results.extend(
@@ -50,7 +47,7 @@ impl Category {
                     }
                 }
             } else {
-                let results = Self::run_tests_in_dir(path.path());
+                let results = Self::run_tests_in_dir(path.path(), timeout);
                 cat.children.push(results)
             }
         }
@@ -141,9 +138,12 @@ impl Display for Category {
 
 #[test]
 fn all_tests() {
+    let timeout = std::env::var("RUSLIC_TIMEOUT").ok().and_then(
+        |t| t.parse().ok()
+    ).unwrap_or(300_000);
     // std::env::set_var("RUSLIC_FAIL_ON_UNSYNTH", "false");
     std::env::set_var("RUSLIC_OUTPUT_TRACE", "false");
-    let results = Category::run_tests_in_dir(PathBuf::from("./tests/synth/"));
+    let results = Category::run_tests_in_dir(PathBuf::from("./tests/synth/"), timeout);
     let max_ms = format_ms(results.max_ms());
     println!("### Measured timings (max {max_ms}) ###");
     println!("{results}");
@@ -152,7 +152,7 @@ fn all_tests() {
     std::thread::sleep(std::time::Duration::from_millis(1000));
     if results.errors().count() > 0 {
         let err: Vec<_> = results.errors().map(|err| &err.0).collect();
-        panic!("Tests {:?} errored or exceeded timeout of {TIMEOUT}!", err);
+        panic!("Tests {:?} errored or exceeded timeout of {timeout}!", err);
     }
 }
 
