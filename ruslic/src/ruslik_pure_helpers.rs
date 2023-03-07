@@ -72,7 +72,7 @@ impl<'tcx, F: TypeFolder<'tcx>> PureExpressionWalker<'tcx> for F {
         e.walk_mut(self);
     }
     fn walk_kind_mut(&mut self, k: &mut ExprKind<'tcx>) {
-        if let ExprKind::Call(CallInfo::Pure(_, gas), _) =  k {
+        if let ExprKind::Call(CallInfo::Pure(_, gas), _) = k {
             *gas = gas.fold_with(self);
         }
         k.walk_mut(self);

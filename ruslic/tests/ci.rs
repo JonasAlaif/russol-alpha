@@ -138,9 +138,10 @@ impl Display for Category {
 
 #[test]
 fn all_tests() {
-    let timeout = std::env::var("RUSLIC_TIMEOUT").ok().and_then(
-        |t| t.parse().ok()
-    ).unwrap_or(300_000);
+    let timeout = std::env::var("RUSLIC_TIMEOUT")
+        .ok()
+        .and_then(|t| t.parse().ok())
+        .unwrap_or(300_000);
     // std::env::set_var("RUSLIC_FAIL_ON_UNSYNTH", "false");
     std::env::set_var("RUSLIC_OUTPUT_TRACE", "false");
     let results = Category::run_tests_in_dir(PathBuf::from("./tests/synth/"), timeout);

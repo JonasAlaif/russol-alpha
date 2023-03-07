@@ -92,7 +92,7 @@ pub fn replace_with_sln<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId, sln: String, kee
             method.matches('\n').count(),
         );
         match new_method_lines.cmp(&method_lines) {
-            std::cmp::Ordering::Less => { 
+            std::cmp::Ordering::Less => {
                 for _ in 0..(method_lines - new_method_lines) {
                     new_method += "\n";
                 }

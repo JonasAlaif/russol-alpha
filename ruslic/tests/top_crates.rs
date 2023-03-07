@@ -194,11 +194,7 @@ fn run_on_crate(name: &str, version: &str) -> Vec<SynthesisResult> {
     } else {
         "release"
     };
-    let ruslic = cwd.join(
-        ["..", "target", dir, "ruslic"]
-            .iter()
-            .collect::<PathBuf>(),
-    );
+    let ruslic = cwd.join(["..", "target", dir, "ruslic"].iter().collect::<PathBuf>());
     let suslik = cwd.join(["..", "suslik"].iter().collect::<PathBuf>());
     let timeout = std::env::var("RUSLIC_TIMEOUT").unwrap_or("300000".to_string());
     let mut child = std::process::Command::new("cargo")
@@ -232,6 +228,7 @@ fn run_on_crate(name: &str, version: &str) -> Vec<SynthesisResult> {
     let status = child.wait().unwrap();
     assert!(status.success());
 
+    // Check that everything compiles
     let status = std::process::Command::new("cargo")
         .arg("check")
         .env("RUSTFLAGS", "--cap-lints allow")

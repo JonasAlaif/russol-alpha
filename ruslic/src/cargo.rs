@@ -55,7 +55,6 @@ where
     }
 }
 
-
 pub fn get_rust_toolchain_channel() -> String {
     #[derive(Deserialize)]
     struct RustToolchainFile {
