@@ -1,7 +1,7 @@
 ### Measured timings (max 27_748ms) ###
 # synth (synth & 125 & LOC 5.2 & AN 11.2 & SN 16.6 & USN 19.0 & RA 27.1 & ? & T 1.8)
   # paper (paper & 115 & LOC 5.4 & AN 11.3 & SN 16.7 & USN 18.3 & RA 26.5 & ? & T 1.8)
-    # rust (misc & 50 & LOC 6.2 & AN 14.4 & SN 19.2 & USN 21.8 & RA 33.0 & ? & T 2.4)
+    # rust (rust & 50 & LOC 6.2 & AN 14.4 & SN 19.2 & USN 21.8 & RA 33.0 & ? & T 2.4)
       # stack_tut (stack_tut & 7 & LOC 6.3 & AN 18.9 & SN 20.6 & USN 20.6 & RA 36.7 & ? & T 1.6)
         stack.rs::List::<T>::new - 0_204ms [1/3/3/5] | spec_ast: 4, pfn_ast: {"List::<T>::len": 14, "Node::<T>::len": 16}
         stack.rs::List::<T>::peek_mut - 0_944ms [4/12/12/35] | spec_ast: 36, pfn_ast: {}
@@ -58,7 +58,7 @@
           enum.rs::swap - 0_379ms [10/29/29/28] | spec_ast: 40, pfn_ast: {}
           cyclic_then_reborrow.rs::zero - 6_629ms [11/19/24/37] | spec_ast: 26, pfn_ast: {"Node::elems": 16, "Node::len": 15}
           zeroing.rs::zero - 0_908ms [10/21/26/38] | spec_ast: 14, pfn_ast: {"Node::sum": 13, "Node::len": 12}
-    # verifier (verified & 47 & LOC 1.7 & AN 9.5 & SN 6.4 & USN 7.4 & RA 10.9 & ? & T 0.2)
+    # verifier (verifier & 47 & LOC 1.7 & AN 9.5 & SN 6.4 & USN 7.4 & RA 10.9 & ? & T 0.2)
       # prusti (prusti & 41 & LOC 1.4 & AN 8.7 & SN 5.5 & USN 6.4 & RA 9.4 & ? & T 0.2)
         unsigned.rs::u64_u16 - 0_144ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
         unsigned.rs::u32_usize - 0_146ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
