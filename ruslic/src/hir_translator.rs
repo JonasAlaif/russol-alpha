@@ -18,6 +18,7 @@ pub struct PureFn<'tcx> {
     pub arg_names: Vec<Var>,
     pub expr: PureExpression<'tcx>,
     pub pure_post: PureExpression<'tcx>,
+    pub executable: bool,
     pub ast_nodes: usize,
 }
 
@@ -113,11 +114,18 @@ impl<'tcx> HirTranslator<'tcx> {
                         .iter()
                         .map(|id| Var::arg(id.name))
                         .collect();
+                    // Get return value
+                    let gen_sig = self.tcx.fn_sig(def_id);
+                    let sig: rustc_middle::ty::FnSig = self.tcx.liberate_late_bound_regions(def_id, gen_sig);
+                    let executable = sig.inputs().len() == 1 &&
+                        !sig.inputs()[0].to_string().starts_with("russol_contracts::") &&
+                        !sig.output().to_string().starts_with("russol_contracts::");
                     let pure_fn = PureFn {
                         def_id,
                         arg_names,
                         expr,
                         pure_post,
+                        executable,
                         ast_nodes: ast_nodes + pure_nodes,
                     };
                     self.pure_fns.insert(def_id, pure_fn);

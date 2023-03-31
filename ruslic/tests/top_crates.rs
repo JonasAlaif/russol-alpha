@@ -36,6 +36,30 @@ pub fn top_crates_all() {
     top_crates_range(0..100)
 }
 
+#[test]
+pub fn top_crates_cached() {
+    let paths = std::fs::read_dir("./tmp").unwrap();
+    let mut cached_crates = Vec::new();
+    for path in paths {
+        let path = path.unwrap();
+        if path.file_type().unwrap().is_dir() {
+            continue;
+        }
+        let file_name = path.file_name();
+        if let Some(file_name) = file_name.to_str().unwrap().strip_suffix(".crate") {
+            cached_crates.push(file_name.to_string());
+        }
+    }
+
+    let mut results = Vec::new();
+    for krate in cached_crates {
+        let dirname = format!("./tmp/{krate}");
+        let res = run_on_crate(&dirname);
+        results.push((krate, res));
+    }
+    print_results(results);
+}
+
 struct KrateResults;
 impl KrateResults {
     pub fn timeout_count<'a>(res: impl Iterator<Item = &'a SynthesisResult>) -> usize {
@@ -79,61 +103,62 @@ impl KrateResults {
         let (trivial_count, non_trivial_count) = (trivial.len(), non_trivial.len());
         let solved_count = trivial_count + non_trivial_count;
         let unsupported_count = Self::unsupported(res.clone()).count();
-        print!("{timeout_count} & {unsolvable_count} & {unsupported_count} & {solved_count} ({trivial_count}/{non_trivial_count}) | ");
+        print!("Timeout {timeout_count}, Unsolvable {unsolvable_count}, Unsupported {unsupported_count}, Solved {solved_count} (trivial {trivial_count}, non-trivial {non_trivial_count}) | ");
 
         if solved_count > 0 {
             // Trivial:
+            print!("Trivial: ");
             if trivial_count > 0 {
-                let mstats = MeanStats::calculate(trivial.iter().copied());
+                let (_, mstats) = MeanStats::calculate(trivial.iter().copied());
                 let first = mstats.first().unwrap();
                 print!(
-                    "{:.1} [{:.1}/{:.1}/{:.1}/{:.1}]",
+                    "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
                     first.synth_time / 1000.,
                     first.loc,
+                    first.rule_apps,
                     first.ast_nodes,
                     first.ast_nodes_unsimp,
-                    first.rule_apps
                 );
                 for mstat in mstats.into_iter().skip(1) {
                     print!(
-                        "{:.1} [{:.1}/{:.1}/{:.1}/{:.1}]",
+                        "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
                         mstat.synth_time / 1000.,
                         mstat.loc,
+                        mstat.rule_apps,
                         mstat.ast_nodes,
                         mstat.ast_nodes_unsimp,
-                        mstat.rule_apps
                     );
                 }
             } else {
                 print!("0");
             }
-            print!(" / ");
+            print!(" / Non-trivial: ");
             // Non-trivial:
             if non_trivial_count > 0 {
-                let mstats = MeanStats::calculate(non_trivial.iter().copied());
+                let (_, mstats) = MeanStats::calculate(non_trivial.iter().copied());
                 let first = mstats.first().unwrap();
                 print!(
-                    "{:.1} [{:.1}/{:.1}/{:.1}/{:.1}]",
+                    "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
                     first.synth_time / 1000.,
                     first.loc,
+                    first.rule_apps,
                     first.ast_nodes,
                     first.ast_nodes_unsimp,
-                    first.rule_apps
                 );
                 for mstat in mstats.into_iter().skip(1) {
                     print!(
-                        "{:.1} [{:.1}/{:.1}/{:.1}/{:.1}]",
+                        "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
                         mstat.synth_time / 1000.,
                         mstat.loc,
+                        mstat.rule_apps,
                         mstat.ast_nodes,
                         mstat.ast_nodes_unsimp,
-                        mstat.rule_apps
                     );
                 }
             } else {
                 print!("0");
             }
-            print!(" | ");
+            print!(" | Unsupported due to: ");
         }
 
         for (r, (c, _non_main)) in Self::reason_count(res) {
@@ -149,9 +174,15 @@ pub fn top_crates_range(range: std::ops::Range<usize>) {
     let top_crates = top_crates_by_download_count(range.end);
     for krate in top_crates.into_iter().skip(range.start) {
         let version = krate.version.unwrap_or(krate.newest_version);
-        let res = run_on_crate(&krate.name, &version);
+        let dirname = download_crate(&krate.name, &version);
+        let res = run_on_crate(&dirname);
         results.push((krate.name, res));
     }
+    print_results(results);
+    // std::fs::remove_dir_all("tmp").unwrap();
+}
+
+pub fn print_results(results: Vec<(String, Vec<SynthesisResult>)>) {
     println!("\n");
     for (krate, res) in &results {
         print!("  {krate} | ");
@@ -160,12 +191,10 @@ pub fn top_crates_range(range: std::ops::Range<usize>) {
     print!("ALL | ");
     KrateResults::summarise(results.iter().flat_map(|(_, res)| res.iter()));
     println!();
-
-    // std::fs::remove_dir_all("tmp").unwrap();
 }
 
-fn run_on_crate(name: &str, version: &str) -> Vec<SynthesisResult> {
-    let dirname = format!("./tmp/{}-{}", name, version);
+fn download_crate(name: &str, version: &str) -> String {
+    let dirname = format!("./tmp/{name}-{version}");
     let filename = format!("{dirname}.crate");
     if !std::path::PathBuf::from(&filename).exists() {
         let dl = format!(
@@ -176,8 +205,12 @@ fn run_on_crate(name: &str, version: &str) -> Vec<SynthesisResult> {
         let mut file = std::fs::File::create(&filename).unwrap();
         resp.copy_to(&mut file).unwrap();
     }
+    dirname
+}
+
+fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
     let status = std::process::Command::new("tar")
-        .args(["-xf", &filename, "-C", "./tmp/"])
+        .args(["-xf", &format!("{dirname}.crate"), "-C", "./tmp/"])
         .status()
         .unwrap();
     assert!(status.success());

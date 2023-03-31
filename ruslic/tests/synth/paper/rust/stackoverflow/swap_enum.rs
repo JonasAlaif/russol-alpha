@@ -8,11 +8,7 @@ enum Foo<T> {
 
 impl<T> Foo<T> {
     // FAILURE: (requires unsafe - std wrapped safe fns don't help!)
-    #[helper] // Skip synthesis
-    fn switch(&mut self) {
-        // *self = match self {
-        //     &mut Foo::Bar(val) => Foo::Baz(val),
-        //     &mut Foo::Baz(val) => Foo::Bar(val),
-        // }
-    }
+    // fn switch(&mut self) {
+    //     todo!()
+    // }
 }

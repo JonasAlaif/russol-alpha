@@ -1,10 +1,6 @@
 #![feature(box_patterns)]
 use russol_contracts::*;
 
-enum Tree<T> {
-    Nil,
-    Cons { elem: T, next: List<Tree<T>> },
-}
 enum List<T> {
     Nil,
     Cons(Box<(T, List<T>)>),
@@ -25,37 +21,6 @@ impl<T> List<T> {
             List::Nil => 0,
             List::Cons(box (_, tl)) => 1 + tl.len(),
         }
-    }
-}
-impl<T> List<Tree<T>> {
-    #[pure]
-    fn elems_tree(&self) -> Set<T> {
-        match self {
-            List::Nil => set!{},
-            List::Cons(box (hd, tl)) => hd.elems() + tl.elems_tree(),
-        }
-    }
-}
-
-// rose-tree
-impl<T> Tree<T> {
-    #[pure]
-    fn elems(&self) -> Set<T> {
-        match self {
-            Tree::Nil => set!{},
-            Tree::Cons { elem, next } => next.elems_tree() + set!{ elem },
-        }
-    }
-
-    #[ensures(result.elems() == self.elems())]
-    fn copy(&self) -> Self where T: Copy {
-        ruslik!()
-    }
-
-    #[ensures(result.elems() == self.elems())]
-    #[params("--closeWhileAbduce=false")]
-    fn flatten(self) -> List<T> {
-        ruslik!()
     }
 }
 

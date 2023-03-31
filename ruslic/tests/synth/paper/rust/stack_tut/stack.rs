@@ -22,10 +22,10 @@ fn is_some<T>(opt: &Option<T>) -> bool { matches!(opt, Some(_)) }
 impl<T> Node<T> {
     #[pure]
     #[trusted_ensures(result >= 1)]
-    pub fn len(&self) -> u16 {
+    pub fn len_gt(&self) -> u16 {
         match &self.next {
             None => 1,
-            Some(n) => 1 + n.len(),
+            Some(n) => 1 + n.len_gt(),
         }
     }
 }
@@ -41,7 +41,7 @@ impl<T> List<T> {
     pub fn len(&self) -> u16 {
         match &self.head {
             None => 0,
-            Some(n) => n.len(),
+            Some(n) => n.len_gt(),
         }
     }
 
@@ -127,7 +127,7 @@ impl<'a, T> Iter<'a, T> {
     pub fn len(&self) -> u16 {
         match &self.next {
             None => 0,
-            Some(n) => n.len(),
+            Some(n) => n.len_gt(),
         }
     }
 }
@@ -170,7 +170,7 @@ impl<'a, T> IterMut<'a, T> {
     pub fn len(&self) -> u16 {
         match &self.next {
             None => 0,
-            Some(n) => n.len(),
+            Some(n) => n.len_gt(),
         }
     }
 }

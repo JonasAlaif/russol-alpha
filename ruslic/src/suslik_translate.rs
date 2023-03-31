@@ -176,12 +176,15 @@ impl<'a, 'tcx> STyTranslator<'a, 'tcx> {
                             return Err(Reason::NonExhaustive);
                         }
                         // TODO: redo this (temporary workaround for private modules)
+                        // the issue is that there may be multiple ways to address a type, e.g.
+                        // `some::private::module::Type` or `some::Type` (if `some` reexports `Type`)
+                        // it's unclear how to get the correct (non-private) path which `rustc` will accept
                         if clean_name.contains("char_data::tables::BidiClass")
                             || clean_name.contains("error::conversion_range::ConversionRange")
                             || clean_name.contains("proto::peer::Dyn")
                             || clean_name.contains("codec::error::UserError")
                         {
-                            return Err(Reason::Blacklist);
+                            return Err(Reason::Other);
                         }
                         v.insert(Predicate {
                             is_prim: false,

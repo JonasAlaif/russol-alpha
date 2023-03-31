@@ -1,12 +1,12 @@
 use russol_contracts::*;
 
-struct Node {
+struct Node1 {
     elem: i32,
-    next: Option<Box<Node>>,
+    next: Option<Box<Node1>>,
 }
-pub struct List { head: Option<Box<Node>>, }
+pub struct List { head: Option<Box<Node1>>, }
 
-impl Node {
+impl Node1 {
     #[pure]
     fn eq(&self, val: i32) -> bool {
         self.elem == val &&
@@ -45,7 +45,7 @@ impl Node {
 pub fn listset(list: &mut List, val: i32) {
   listset_6(val, &mut list.head)
 }
-#[helper] fn listset_6(val: i32, head: &mut std::option::Option<std::boxed::Box<Node>>) {
+#[helper] fn listset_6(val: i32, head: &mut std::option::Option<std::boxed::Box<Node1>>) {
   match head {
     ::std::option::Option::None => (),
     ::std::option::Option::Some(_0) => {

@@ -1,16 +1,16 @@
 use russol_contracts::*;
 
-enum List<T> {
+enum Node<T> {
     Nil,
-    Cons { elem: T, next: Box<List<T>> },
+    Cons { elem: T, next: Box<Node<T>> },
 }
 
-impl<T> List<T> {
+impl<T> Node<T> {
     #[pure]
     fn elems(&self) -> Set<T> {
         match self {
-            List::Nil => set!{},
-            List::Cons { elem, next } => next.elems() + set!{ elem },
+            Node::Nil => set!{},
+            Node::Cons { elem, next } => next.elems() + set!{ elem },
         }
     }
 
@@ -52,35 +52,35 @@ impl<T> Tree<T> {
 
     #[ensures((^l).elems() == self.elems() + l.elems())]
     #[params("--closeWhileAbduce=false")]
-    fn tree_flatten_acc(self, l: &mut List<T>) {
+    fn tree_flatten_acc(self, l: &mut Node<T>) {
       match l {
-        List::Nil => {
+        Node::Nil => {
           let new = self.tree_flatten_acc_7();
           *l = new
         }
-        List::Cons { next, .. } => self.tree_flatten_acc(&mut **next), // <- TODO: investigate why the args here get swapped
+        Node::Cons { next, .. } => self.tree_flatten_acc(&mut **next), // <- TODO: investigate why the args here get swapped
       }
     }
-    #[helper] fn tree_flatten_acc_7(self) -> List<T> {
+    #[helper] fn tree_flatten_acc_7(self) -> Node<T> {
       match self {
-        Tree::Leaf => List::Nil,
+        Tree::Leaf => Node::Nil,
         Tree::Node { elem, left, right } => {
           let new = left.tree_flatten_acc_7();
           Self::tree_flatten_acc_18(elem, *right, new)
         }
       }
     }
-    #[helper] fn tree_flatten_acc_18(elem: T, bx: Tree<T>, new: List<T>) -> List<T> {
+    #[helper] fn tree_flatten_acc_18(elem: T, bx: Tree<T>, new: Node<T>) -> Node<T> {
       match new {
-        List::Nil => {
+        Node::Nil => {
           let new = bx.tree_flatten_acc_7();
           let next = Box::new(new);
-          List::Cons { elem, next }
+          Node::Cons { elem, next }
         }
-        List::Cons { elem: elem_new, next } => {
+        Node::Cons { elem: elem_new, next } => {
           let new = Self::tree_flatten_acc_18(elem_new, bx, *next);
           let next = Box::new(new);
-          List::Cons { elem, next }
+          Node::Cons { elem, next }
         }
       }
     }
@@ -89,41 +89,41 @@ impl<T> Tree<T> {
 
     #[ensures(result.elems() == self.elems())]
     #[params("--closeWhileAbduce=false")]
-    fn tree_flatten_helper(self, token: Token) -> List<T> {
+    fn tree_flatten_helper(self, token: Token) -> Node<T> {
       match self {
-        Tree::Leaf => List::Nil,
+        Tree::Leaf => Node::Nil,
         Tree::Node { elem, left, right } => {
           let result_1 = left.tree_flatten_helper(token);
           let result_2 = right.tree_flatten_helper(token);
           let result = result_1.append(result_2, token);
           let next = Box::new(result);
-          List::Cons { elem, next }
+          Node::Cons { elem, next }
         }
       }
     }
 
     #[ensures(result.elems() == self.elems())]
     #[params("--closeWhileAbduce=false")]
-    fn tree_flatten(self) -> List<T> {
+    fn tree_flatten(self) -> Node<T> {
       match self {
-        Tree::Leaf => List::Nil,
+        Tree::Leaf => Node::Nil,
         Tree::Node { elem, left, right } => {
           let result = left.tree_flatten();
           Self::tree_flatten_12(elem, *right, result)
         }
       }
     }
-    #[helper] fn tree_flatten_12(elem: T, bx: Tree<T>, result: List<T>) -> List<T> {
+    #[helper] fn tree_flatten_12(elem: T, bx: Tree<T>, result: Node<T>) -> Node<T> {
       match result {
-        List::Nil => {
+        Node::Nil => {
           let result = bx.tree_flatten();
           let next = Box::new(result);
-          List::Cons { elem, next }
+          Node::Cons { elem, next }
         }
-        List::Cons { elem: elem_result, next } => {
+        Node::Cons { elem: elem_result, next } => {
           let result = Self::tree_flatten_12(elem_result, bx, *next);
           let next = Box::new(result);
-          List::Cons { elem, next }
+          Node::Cons { elem, next }
         }
       }
     }

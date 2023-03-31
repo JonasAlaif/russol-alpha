@@ -1,12 +1,12 @@
 use russol_contracts::*;
 
-pub struct List<T> {
+pub struct ListP<T> {
     head: Link<T>,
 }
 
-type Link<T> = Option<Box<Node<T>>>;
+type Link<T> = Option<Box<NodeP<T>>>;
 
-struct Node<T> {
+struct NodeP<T> {
     elem: T,
     next: Link<T>,
 }
@@ -16,7 +16,7 @@ struct Node<T> {
 #[ensures(matches!(^x, None))]
 fn take<T>(x: &mut Option<T>) -> Option<T> { ruslik!() }
 
-impl<T> Node<T> {
+impl<T> NodeP<T> {
     #[pure]
     pub fn len(&self) -> i32 {
         match &self.next {
@@ -33,16 +33,16 @@ impl<T> Node<T> {
     }
 }
 
-impl<T> List<T> {
+impl<T> ListP<T> {
     ///
     /// Example 1 [Simple owned]
     /// 
     #[ensures(matches!(result.head, Some(_)))]
     pub fn single(elem: T) -> Self {
-      let bx = Node { elem, next: ::std::option::Option::None };
+      let bx = NodeP { elem, next: ::std::option::Option::None };
       let _0 = Box::new(bx);
       let head = ::std::option::Option::Some(_0);
-      List { head }
+      ListP { head }
     }
 
     ///
@@ -52,7 +52,7 @@ impl<T> List<T> {
     pub fn append(&mut self, tail: Self) {
       Self::append_8(&mut self.head, tail.head)
     }
-    #[helper] fn append_8(head_self: &mut std::option::Option<std::boxed::Box<Node<T>>>, head_tail: std::option::Option<std::boxed::Box<Node<T>>>) {
+    #[helper] fn append_8(head_self: &mut std::option::Option<std::boxed::Box<NodeP<T>>>, head_tail: std::option::Option<std::boxed::Box<NodeP<T>>>) {
       match head_self {
         ::std::option::Option::None => *head_self = head_tail,
         ::std::option::Option::Some(_0) => Self::append_8(&mut _0.next, head_tail),
@@ -84,7 +84,7 @@ impl<T> List<T> {
     })]
     pub fn push(&mut self, elem: T) {
       let result = take(&mut self.head);
-      let bx = Node { elem, next: result };
+      let bx = NodeP { elem, next: result };
       let _0 = Box::new(bx);
       let new = ::std::option::Option::Some(_0);
       self.head = new

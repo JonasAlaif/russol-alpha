@@ -43,7 +43,7 @@ pub struct SuslikProgram {
     pub(crate) extern_fns: Vec<Signature>,
     pub(crate) synth_fn: Signature,
     pub(crate) synth_ast: usize,
-    pub(crate) pure_fn_ast: FxHashMap<String, usize>,
+    pub(crate) pure_fn_ast: UsedPureFns,
 }
 
 pub struct Signature {
@@ -206,7 +206,7 @@ pub enum Reason {
     RequiresFlag,
     PrivateType,
     NonExhaustive,
-    Blacklist,
+    Other,
     CharFloat,
     ArraySlice,
     Closure,
@@ -237,12 +237,13 @@ impl SynthesisResult {
         }
     }
 }
+pub type UsedPureFns = FxHashMap<String, (bool, usize)>;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct Solved {
     pub is_trivial: bool,
     pub exec_time: u64,
     pub synth_ast: usize,
-    pub pure_fn_ast: FxHashMap<String, usize>,
+    pub pure_fn_ast: UsedPureFns,
     pub slns: Vec<Solution>,
 }
 impl Solved {
@@ -250,7 +251,7 @@ impl Solved {
         is_trivial: bool,
         exec_time: u64,
         synth_ast: usize,
-        pure_fn_ast: FxHashMap<String, usize>,
+        pure_fn_ast: UsedPureFns,
         sln: String,
     ) -> Self {
         let min_lines_print = std::env::var("RUSLIC_PRINT_SLN_ABOVE")
@@ -297,10 +298,18 @@ impl MeanStats {
             rule_apps: 0.,
         }
     }
-    pub fn calculate<'a>(many_slns: impl Iterator<Item = &'a Solved>) -> Vec<Self> {
+    pub fn calculate<'a>(many_slns: impl Iterator<Item = &'a Solved>) -> (UsedPureFns, Vec<Self>) {
         let mut count = Vec::new();
         let mut sums = Vec::new();
+        let mut pure_fns = FxHashMap::default();
         for solved in many_slns {
+            for (k, &v) in &solved.pure_fn_ast {
+                if let Some(&pfn) = pure_fns.get(k) {
+                    assert_eq!(pfn, v, "key {k}");
+                } else {
+                    pure_fns.insert(k.clone(), v);
+                }
+            }
             for (idx, sln) in solved.slns.iter().enumerate() {
                 if count.len() <= idx {
                     count.push(0.)
@@ -325,7 +334,7 @@ impl MeanStats {
             sum.ast_nodes_unsimp /= count;
             sum.rule_apps /= count;
         }
-        sums
+        (pure_fns, sums)
     }
 }
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -546,7 +555,7 @@ impl SuslikProgram {
             pure_fn_ast: ssig
                 .used_pure_fns
                 .into_iter()
-                .map(|pfn| (tcx.def_path_str(pfn.def_id), pfn.ast_nodes))
+                .map(|pfn| (tcx.def_path_str(pfn.def_id), (pfn.executable, pfn.ast_nodes)))
                 .collect(),
         };
         res.normalize();

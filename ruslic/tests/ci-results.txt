@@ -1,148 +1,17 @@
-### Measured timings (max 27_748ms) ###
-# synth (synth & 125 & LOC 5.2 & AN 11.2 & SN 16.6 & USN 19.0 & RA 27.1 & ? & T 1.8)
-  # paper (paper & 115 & LOC 5.4 & AN 11.3 & SN 16.7 & USN 18.3 & RA 26.5 & ? & T 1.8)
-    # rust (rust & 50 & LOC 6.2 & AN 14.4 & SN 19.2 & USN 21.8 & RA 33.0 & ? & T 2.4)
-      # stack_tut (stack_tut & 7 & LOC 6.3 & AN 18.9 & SN 20.6 & USN 20.6 & RA 36.7 & ? & T 1.6)
-        stack.rs::List::<T>::new - 0_204ms [1/3/3/5] | spec_ast: 4, pfn_ast: {"List::<T>::len": 14, "Node::<T>::len": 16}
-        stack.rs::List::<T>::peek_mut - 0_944ms [4/12/12/35] | spec_ast: 36, pfn_ast: {}
-        stack.rs::<Iter<'a, T> as std::iter::Iterator>::next - 4_787ms [16/46/46/73] | spec_ast: 32, pfn_ast: {"Node::<T>::len": 16, "Iter::<'a, T>::len": 14}
-        stack.rs::<IterMut<'a, T> as std::iter::Iterator>::next - 0_855ms [5/18/18/42] | spec_ast: 24, pfn_ast: {}
-        stack.rs::List::<T>::peek - 0_460ms [4/12/12/31] | spec_ast: 6, pfn_ast: {"is_some": 8}
-        stack.rs::List::<T>::push - 1_006ms [5/26/26/30] | spec_ast: 15, pfn_ast: {}
-        stack.rs::List::<T>::pop - 2_917ms [9/27/27/41] | spec_ast: 15, pfn_ast: {}
-      # stackoverflow (stackoverflow & 4 & LOC 4.8 & AN 8.5 & SN 17.0 & USN 19.0 & RA 28.5 & ? & T 0.9)
-        reborrow.rs::Bar::<T>::borrow - 0_477ms [4/11/11/29] | spec_ast: 6, pfn_ast: {"is_ok": 8, "is_some": 8}
-        replace_2.rs::LinkedList::prepend_value - 1_960ms [5/25/25/28] | spec_ast: 15, pfn_ast: {}
-        replace_1.rs::SomeStruct::<T>::apply_changes - 0_907ms [9/30/30/43] | spec_ast: 13, pfn_ast: {}
-        nested_refs.rs::use_ref_ref - 0_212ms [1/2/10/14] | spec_ast: 0, pfn_ast: {}
-      # custom (custom & 39 & LOC 6.3 & AN 14.2 & SN 19.2 & USN 22.3 & RA 32.8 & ? & T 2.7)
-        # paper (paper & 12 & LOC 5.2 & AN 8.2 & SN 16.1 & USN 16.1 & RA 27.8 & ? & T 3.1)
-          list_paper_alt.rs::Node::<T>::peek - 0_362ms [4/7/7/18] | spec_ast: 4, pfn_ast: {"Node::<T>::len": 13}
-          list_paper_alt.rs::Node::<T>::push_len - 1_607ms [9/28/28/47] | spec_ast: 8, pfn_ast: {"Node::<T>::len": 13}
-          list_paper_alt.rs::Node::<T>::pop - 11_213ms [8/20/20/35] | spec_ast: 17, pfn_ast: {"Node::<T>::len": 13, "is_some": 8}
-          list_paper_alt.rs::Node::<T>::peek_last - 3_904ms [4/11/11/39] | spec_ast: 10, pfn_ast: {"Node::<T>::len": 13}
-          list_paper_alt.rs::Node::<T>::singleton - 0_202ms [3/13/13/11] | spec_ast: 0, pfn_ast: {}
-          list_paper_alt.rs::Node::<T>::push - 1_878ms [5/21/21/27] | spec_ast: 11, pfn_ast: {}
-          list_paper.rs::Node::<T>::peek - 0_376ms [4/9/9/14] | spec_ast: 4, pfn_ast: {"Node::<T>::len": 12}
-          list_paper.rs::Node::<T>::push_len - 0_806ms [8/26/26/41] | spec_ast: 8, pfn_ast: {"Node::<T>::len": 12}
-          list_paper.rs::Node::<T>::pop - 13_043ms [8/19/19/33] | spec_ast: 17, pfn_ast: {"Node::<T>::len": 12, "is_some": 8}
-          list_paper.rs::Node::<T>::peek_last - 1_579ms [4/13/13/35] | spec_ast: 10, pfn_ast: {"Node::<T>::len": 12}
-          list_paper.rs::Node::<T>::singleton - 0_238ms [2/9/9/9] | spec_ast: 0, pfn_ast: {}
-          list_paper.rs::Node::<T>::push - 1_950ms [4/17/17/25] | spec_ast: 10, pfn_ast: {}
-        # futures (futures & 6 & LOC 2.0 & AN 12.0 & SN 7.0 & USN 15.8 & RA 23.0 & ? & T 1.9)
-          reborrow.rs::foo - 0_442ms [2/7/12/24] | spec_ast: 3, pfn_ast: {"private::is_ten": 4}
-          futures.rs::foo2 - 0_206ms [1/1/7/12] | spec_ast: 5, pfn_ast: {}
-          futures.rs::foo4 - 0_233ms [1/1/7/13] | spec_ast: 14, pfn_ast: {}
-          futures.rs::foo1 - 0_556ms [1/3/21/31] | spec_ast: 6, pfn_ast: {}
-          futures.rs::foo3 - 0_629ms [4/20/20/22] | spec_ast: 17, pfn_ast: {}
-          futures.rs::foo - 9_134ms [3/10/28/36] | spec_ast: 27, pfn_ast: {}
-        # general (general & 21 & LOC 8.1 & AN 18.3 & SN 24.4 & USN 27.8 & RA 38.4 & ? & T 2.7)
-          lstset_awkward.rs::listset - 5_181ms [10/24/30/48] | spec_ast: 44, pfn_ast: {"Node::sum": 14, "Node::len": 13}
-          test.rs::swap - 5_480ms [5/24/30/32] | spec_ast: 37, pfn_ast: {}
-          integer_construct.rs::len - 0_575ms [7/15/20/35] | spec_ast: 14, pfn_ast: {"Node::len": 15}
-          rebrrw_choice.rs::rbrrw - 0_361ms [1/4/14/30] | spec_ast: 18, pfn_ast: {}
-          copy_out.rs::BorrowAndValue::<'a, T>::new - 0_235ms [2/10/15/20] | spec_ast: 0, pfn_ast: {}
-          copy_out.rs::foo - 0_211ms [1/4/12/15] | spec_ast: 0, pfn_ast: {}
-          list.rs::Node::<T>::modify_elems - 0_806ms [8/23/23/38] | spec_ast: 5, pfn_ast: {"Node::<T>::len": 12}
-          list.rs::List::lstset - 12_717ms [22/65/65/74] | spec_ast: 14, pfn_ast: {"Node::<i32>::elems_eq": 17, "Node::<T>::len": 12}
-          list.rs::Node::<i32>::tail2 - 0_620ms [7/17/17/18] | spec_ast: 11, pfn_ast: {"Node::<T>::len": 12}
-          list.rs::Node::<i32>::reborrow_head_and_tail_2 - 12_367ms [7/24/34/47] | spec_ast: 39, pfn_ast: {"Node::<T>::len": 12, "Node::<T>::elems": 16}
-          list.rs::List::append - 1_052ms [7/24/29/43] | spec_ast: 24, pfn_ast: {"Node::<T>::len": 12, "Node::<T>::elems": 16}
-          list.rs::List::duplicate - 0_788ms [13/42/42/47] | spec_ast: 14, pfn_ast: {"Node::<T>::len": 12, "Node::<T>::elems": 16}
-          find_false.rs::foo - 0_228ms [2/5/10/10] | spec_ast: 7, pfn_ast: {}
-          tree_bst.rs::Tree::insert - 1_928ms [12/56/56/111] | spec_ast: 67, pfn_ast: {"Tree::elems": 20}
-          tree.rs::Tree::duplicate - 1_753ms [11/43/43/50] | spec_ast: 5, pfn_ast: {"Tree::size": 16}
-          tree_to_list.rs::Tree::<T>::to_list - 3_183ms [21/53/53/61] | spec_ast: 5, pfn_ast: {"Tree::<T>::elems": 20, "List::<T>::elems": 16}
-          clone.rs::clone - 0_181ms [1/2/2/9] | spec_ast: 0, pfn_ast: {}
-          clone.rs::Foo::<T>::clone - 0_224ms [2/9/9/15] | spec_ast: 0, pfn_ast: {}
-          enum.rs::swap - 0_379ms [10/29/29/28] | spec_ast: 40, pfn_ast: {}
-          cyclic_then_reborrow.rs::zero - 6_629ms [11/19/24/37] | spec_ast: 26, pfn_ast: {"Node::elems": 16, "Node::len": 15}
-          zeroing.rs::zero - 0_908ms [10/21/26/38] | spec_ast: 14, pfn_ast: {"Node::sum": 13, "Node::len": 12}
-    # verifier (verifier & 47 & LOC 1.7 & AN 9.5 & SN 6.4 & USN 7.4 & RA 10.9 & ? & T 0.2)
-      # prusti (prusti & 41 & LOC 1.4 & AN 8.7 & SN 5.5 & USN 6.4 & RA 9.4 & ? & T 0.2)
-        unsigned.rs::u64_u16 - 0_144ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        unsigned.rs::u32_usize - 0_146ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        unsigned.rs::u32_u64 - 0_143ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        unsigned.rs::u64_u8 - 0_152ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        unsigned.rs::u16_u8 - 0_154ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        generics-basic-5.rs::test2 - 0_366ms [2/19/19/30] | spec_ast: 21, pfn_ast: {}
-        generics-basic-5.rs::test1 - 0_297ms [2/15/15/20] | spec_ast: 17, pfn_ast: {}
-        match-expr.rs::test_match_expr - 0_148ms [1/1/1/4] | spec_ast: 13, pfn_ast: {}
-        match-expr.rs::test_match_option_expr - 0_167ms [1/5/5/6] | spec_ast: 12, pfn_ast: {}
-        box-specification.rs::foo - 0_187ms [1/1/1/8] | spec_ast: 3, pfn_ast: {}
-        wand-identity2.rs::identity3 - 0_282ms [2/8/14/18] | spec_ast: 9, pfn_ast: {}
-        wand-identity2.rs::identity - 0_223ms [1/1/7/14] | spec_ast: 7, pfn_ast: {}
-        wand-identity2.rs::identity2 - 0_292ms [3/8/14/18] | spec_ast: 11, pfn_ast: {}
-        account.rs::Account::transfer - 0_551ms [4/30/30/29] | spec_ast: 26, pfn_ast: {"Account::balance": 2}
-        account.rs::Account::deposit - 0_303ms [3/16/16/14] | spec_ast: 14, pfn_ast: {"Account::balance": 2}
-        account.rs::Account::withdraw - 0_310ms [3/16/16/14] | spec_ast: 12, pfn_ast: {"Account::balance": 2}
-        fields-spec.rs::test_tuple_field - 0_198ms [1/7/7/7] | spec_ast: 18, pfn_ast: {}
-        fields-spec.rs::test_struct_field - 0_212ms [1/7/7/10] | spec_ast: 18, pfn_ast: {}
-        ownership2.rs::shift_x - 0_423ms [2/17/17/17] | spec_ast: 18, pfn_ast: {}
-        ownership2.rs::add - 0_247ms [1/7/7/10] | spec_ast: 10, pfn_ast: {}
-        match-expr-variants.rs::test_match_expr - 0_180ms [1/4/4/7] | spec_ast: 9, pfn_ast: {}
-        move.rs::test2 - 0_237ms [2/8/14/12] | spec_ast: 5, pfn_ast: {}
-        move.rs::test1 - 0_202ms [1/4/9/10] | spec_ast: 4, pfn_ast: {}
-        sign_mix.rs::i16_u8 - 0_153ms [1/1/1/4] | spec_ast: 7, pfn_ast: {}
-        sign_mix.rs::u32_isize - 0_150ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        sign_mix.rs::i64_u16 - 0_148ms [1/1/1/4] | spec_ast: 7, pfn_ast: {}
-        sign_mix.rs::u64_i16 - 0_149ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        sign_mix.rs::i64_u8 - 0_157ms [1/1/1/4] | spec_ast: 7, pfn_ast: {}
-        sign_mix.rs::u16_i8 - 0_147ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        sign_mix.rs::u64_i8 - 0_158ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        sign_mix.rs::u64_u32 - 0_158ms [1/1/1/4] | spec_ast: 4, pfn_ast: {}
-        sign_mix.rs::u32_i64 - 0_151ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        signed.rs::u16_i8 - 0_165ms [1/1/1/4] | spec_ast: 8, pfn_ast: {}
-        signed.rs::i64_i16 - 0_159ms [1/1/1/4] | spec_ast: 8, pfn_ast: {}
-        signed.rs::i32_isize - 0_144ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        signed.rs::i64_i8 - 0_160ms [1/1/1/4] | spec_ast: 8, pfn_ast: {}
-        signed.rs::i32_i64 - 0_144ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        shared.rs::test6 - 0_150ms [1/0/5/6] | spec_ast: 6, pfn_ast: {}
-        shared.rs::test - 0_144ms [1/1/1/4] | spec_ast: 0, pfn_ast: {}
-        generics-basic-6.rs::test1 - 0_287ms [2/19/19/19] | spec_ast: 12, pfn_ast: {}
-        bst_generics_paper.rs::Tree::get_root_value - 0_522ms [4/11/16/32] | spec_ast: 37, pfn_ast: {"Tree::leftmost": 19, "Tree::rightmost": 19, "Tree::bst_invariant": 36}
-      # creusot (creusot & 6 & LOC 3.2 & AN 15.3 & SN 12.5 & USN 14.3 & RA 20.8 & ? & T 0.4)
-        inc_some_2_list.rs::List::sum_x - 0_477ms [8/20/20/29] | spec_ast: 8, pfn_ast: {"List::sum": 13}
-        inc_some_2_list.rs::List::take_some_rest - 0_538ms [4/16/21/25] | spec_ast: 26, pfn_ast: {"List::sum": 13}
-        swap_borrows.rs::swap - 0_229ms [1/9/9/11] | spec_ast: 11, pfn_ast: {}
-        wrapping.rs::test_u8_wrapping_add - 0_527ms [2/13/13/23] | spec_ast: 13, pfn_ast: {}
-        take_max.rs::take_max - 0_347ms [3/16/16/27] | spec_ast: 20, pfn_ast: {}
-        unnest.rs::unnest - 0_207ms [1/1/7/10] | spec_ast: 14, pfn_ast: {}
-    # suslik (suslik & 18 & LOC 12.8 & AN 7.1 & SN 36.4 & USN 36.7 & RA 49.3 & ? & T 4.5)
-      # tree (tree & 5 & LOC 16.0 & AN 5.6 & SN 44.8 & USN 44.8 & RA 58.6 & ? & T 2.9)
-        tree.rs::Tree::<T>::tree_flatten_acc - 7_845ms [30/72/72/93] | spec_ast: 9, pfn_ast: {"Tree::<T>::elems": 20, "List::<T>::elems": 16}
-        tree.rs::Tree::<T>::tree_copy - 1_782ms [11/42/42/51] | spec_ast: 5, pfn_ast: {"Tree::<T>::elems": 20}
-        tree.rs::Tree::<T>::tree_flatten - 2_888ms [21/53/53/61] | spec_ast: 5, pfn_ast: {"Tree::<T>::elems": 20, "List::<T>::elems": 16}
-        tree.rs::Tree::<T>::tree_flatten_helper - 1_424ms [10/34/34/52] | spec_ast: 5, pfn_ast: {"Tree::<T>::elems": 20, "List::<T>::elems": 16}
-        tree.rs::Tree::<T>::tree_size - 0_686ms [8/23/23/36] | spec_ast: 4, pfn_ast: {"Tree::<T>::size": 19}
-      # rose-tree_multi-list (rose-tree_multi-list & 3 & LOC 21.7 & AN 5.0 & SN 60.7 & USN 60.7 & RA 77.3 & ? & T 13.1)
-        rose-tree_multi-list.rs::Tree::<T>::copy - 27_748ms [25/74/74/103] | spec_ast: 5, pfn_ast: {"List::<Tree<T>>::elems_tree": 17, "Tree::<T>::elems": 16}
-        rose-tree_multi-list.rs::Tree::<T>::flatten - 8_826ms [25/67/67/79] | spec_ast: 5, pfn_ast: {"List::<Tree<T>>::elems_tree": 17, "Tree::<T>::elems": 16, "List::<T>::elems": 18}
-        rose-tree_multi-list.rs::List::<List<T>>::flatten - 2_743ms [15/41/41/50] | spec_ast: 5, pfn_ast: {"List::<List<T>>::elems_list": 17, "List::<T>::elems": 18}
-      # sll (sll & 9 & LOC 9.0 & AN 8.4 & SN 25.8 & USN 26.3 & RA 38.1 & ? & T 2.9)
-        sll.rs::Node::<T>::sll_append - 0_720ms [4/16/16/34] | spec_ast: 9, pfn_ast: {"Node::<T>::len": 12}
-        sll.rs::Node::<T>::sll_singleton - 0_179ms [2/9/9/9] | spec_ast: 0, pfn_ast: {}
-        sll.rs::Node::<T>::sll_init - 10_656ms [12/31/36/48] | spec_ast: 13, pfn_ast: {"Node::<T>::len": 12, "Node::<T>::elems": 16}
-        sll.rs::Node::<T>::sll_append3 - 6_926ms [17/43/43/63] | spec_ast: 12, pfn_ast: {"Node::<T>::len": 12}
-        sll.rs::Node::<T>::sll_copy - 0_941ms [9/28/28/36] | spec_ast: 3, pfn_ast: {}
-        sll.rs::Node::<u16>::insertion_sort - 1_028ms [8/22/22/40] | spec_ast: 7, pfn_ast: {"Node::<u16>::is_sorted": 23, "Node::<T>::elems": 16}
-        sll.rs::Node::<u16>::srtl_prepend - 0_284ms [2/10/10/13] | spec_ast: 16, pfn_ast: {"Node::<T>::len": 12}
-        sll.rs::Node::<T>::sll_len - 0_466ms [7/15/15/25] | spec_ast: 8, pfn_ast: {"Node::<T>::len": 12}
-        sll.rs::Node::<T>::sll_append_copy - 4_536ms [20/58/58/75] | spec_ast: 8, pfn_ast: {"Node::<T>::len": 12}
-      # integers (integers & 1 & LOC 4.0 & AN 8.0 & SN 18.0 & USN 18.0 & RA 19.0 & ? & T 0.4)
-        integers.rs::swap - 0_427ms [4/18/18/19] | spec_ast: 8, pfn_ast: {}
-  # other (other & 10 & LOC 3.8 & AN 10.9 & SN 15.6 & USN 27.0 & RA 33.9 & ? & T 0.9)
-    # ci (ci & 4 & LOC 1.0 & AN 3.5 & SN 5.8 & USN 34.2 & RA 34.0 & ? & T 0.7)
-      copy.rs::foo - 0_192ms [1/4/4/12] | spec_ast: 3, pfn_ast: {}
-      many_choices.rs::owned - 0_160ms [1/5/5/7] | spec_ast: 0, pfn_ast: {}
-      many_choices.rs::borrowed - 2_061ms [1/5/119/106] | spec_ast: 0, pfn_ast: {}
-      strange_args.rs::to_tuple - 0_213ms [1/9/9/11] | spec_ast: 11, pfn_ast: {}
-    # suslik (suslik & 1 & LOC 11.0 & AN 14.0 & SN 43.0 & USN 43.0 & RA 53.0 & ? & T 2.3)
-      avl.rs::avl_copy - 2_269ms [11/43/43/53] | spec_ast: 14, pfn_ast: {"Avl::<i32>::height": 25, "Avl::<i32>::size": 16, "Avl::<i32>::is_avl": 34}
-    # presentation (presentation & 5 & LOC 4.6 & AN 16.2 & SN 18.0 & USN 18.0 & RA 30.0 & ? & T 0.9)
-      stack.rs::List::<T>::append - 1_597ms [7/22/22/46] | spec_ast: 9, pfn_ast: {"List::<T>::len": 11, "Node::<T>::len": 13}
-      stack.rs::List::<T>::peek_mut - 0_813ms [4/12/12/35] | spec_ast: 36, pfn_ast: {}
-      stack.rs::List::<T>::peek_last - 0_981ms [3/13/13/25] | spec_ast: 6, pfn_ast: {"Node::<T>::elems": 19, "List::<T>::elems": 12}
-      stack.rs::List::<T>::single - 0_191ms [4/17/17/14] | spec_ast: 8, pfn_ast: {}
-      stack.rs::List::<T>::push - 0_779ms [5/26/26/30] | spec_ast: 22, pfn_ast: {"List::<T>::len": 11, "Node::<T>::len": 13}
+### Measured timings (max 15_520ms) ###
+paper    Solved 115      Time 0.8s       SOL rules 26.49         Rust LOC 5.36   Code/Spec 1.37          Sln nodes 16.65        Ann nodes 11.26          Non-exec pure fn nodes 0.90
+  rust   Solved 50       Time 1.1s       SOL rules 32.98         Rust LOC 6.16   Code/Spec 1.27          Sln nodes 19.20        Ann nodes 14.42          Non-exec pure fn nodes 0.72
+    stack_tut    Solved 7        Time 0.6s       SOL rules 36.71         Rust LOC 6.29   Code/Spec 1.09          Sln nodes 20.57         Ann nodes 18.86         Non-exec pure fn nodes 0.00
+    stackoverflow        Solved 4        Time 0.4s       SOL rules 28.50         Rust LOC 4.75   Code/Spec 2.00          Sln nodes 17.00         Ann nodes 8.50          Non-exec pure fn nodes 0.00
+    custom       Solved 39       Time 1.3s       SOL rules 32.77         Rust LOC 6.28   Code/Spec 1.27          Sln nodes 19.18         Ann nodes 14.23         Non-exec pure fn nodes 0.92
+  verifier       Solved 47       Time 0.1s       SOL rules 10.85         Rust LOC 1.66   Code/Spec 0.67          Sln nodes 6.36  Ann nodes 9.51          Non-exec pure fn nodes 0.00
+    prusti       Solved 41       Time 0.1s       SOL rules 9.39          Rust LOC 1.44   Code/Spec 0.63          Sln nodes 5.46  Ann nodes 8.66          Non-exec pure fn nodes 0.00
+    creusot      Solved 6        Time 0.2s       SOL rules 20.83         Rust LOC 3.17   Code/Spec 0.82          Sln nodes 12.50         Ann nodes 15.33         Non-exec pure fn nodes 0.00
+  suslik         Solved 18       Time 1.9s       SOL rules 49.28         Rust LOC 12.78          Code/Spec 2.84          Sln nodes 36.44         Ann nodes 7.06          Non-exec pure fn nodes 5.78
+    tree         Solved 5        Time 1.5s       SOL rules 58.60         Rust LOC 16.00          Code/Spec 3.50          Sln nodes 44.80         Ann nodes 5.60          Non-exec pure fn nodes 7.20
+    sll          Solved 7        Time 0.5s       SOL rules 41.43         Rust LOC 10.14          Code/Spec 2.90          Sln nodes 28.57         Ann nodes 7.57          Non-exec pure fn nodes 2.29
+    integers     Solved 1        Time 0.2s       SOL rules 19.00         Rust LOC 4.00   Code/Spec 2.25          Sln nodes 18.00         Ann nodes 8.00          Non-exec pure fn nodes 0.00
+    rose-tree    Solved 2        Time 10.3s      SOL rules 91.00         Rust LOC 25.00          Code/Spec 2.31          Sln nodes 70.50         Ann nodes 5.00          Non-exec pure fn nodes 25.50
+    multi-list   Solved 1        Time 1.3s       SOL rules 50.00         Rust LOC 15.00          Code/Spec 1.02          Sln nodes 41.00         Ann nodes 5.00          Non-exec pure fn nodes 35.00
+    srtl         Solved 2        Time 0.3s       SOL rules 26.50         Rust LOC 5.00   Code/Spec 0.82          Sln nodes 16.00         Ann nodes 11.50         Non-exec pure fn nodes 8.00
 #######################################

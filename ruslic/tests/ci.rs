@@ -78,58 +78,82 @@ impl Category {
 
 impl Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let is_eval = std::env::var("RUSLIC_EVAL").ok().map(|s| s.parse::<bool>().unwrap()).unwrap_or(false);
+        if is_eval {
+            if !["paper", "rust", "stack_tut", "stackoverflow", "custom", "verifier", "prusti", "creusot",
+                            "suslik", "tree", "rose-tree", "multi-list", "sll", "srtl", "integers"].into_iter().any(|s|
+                s == &self.dir
+            ) {
+                for child in &self.children {
+                    write!(f, "{child}")?;
+                }
+                return Ok(());
+            }
+        }
         let solved = self.solved().count();
-        write!(f, "# {0} ({0} & {solved}", self.dir)?;
+        write!(f, "\n{0} \t Solved {solved}", self.dir)?;
         if solved > 0 {
-            let mean_stats = &MeanStats::calculate(self.solved())[0];
+            let (pure_fns, mean_stats) = MeanStats::calculate(self.solved());
+            let mean_stats = &mean_stats[0];
+            let pure_fn_nodes = pure_fns.values().filter(|(exec, _)| !exec).fold(0, |acc, (_, n)| acc + n);
+            let pure_fn_nodes = pure_fn_nodes as f64 / solved as f64;
+            let ann_overhead = mean_stats.ast_nodes / (mean_stats.spec_ast + pure_fn_nodes);
             write!(
                 f,
-                " & LOC {:.1} & AN {:.1} & SN {:.1} & USN {:.1} & RA {:.1} & T {:.1}",
-                mean_stats.loc,
-                mean_stats.spec_ast,
-                mean_stats.ast_nodes,
-                mean_stats.ast_nodes_unsimp,
+                " \t Time {:.1}s \t SOL rules {:.2} \t Rust LOC {:.2} \t Code/Spec {:.2} \t Sln nodes {:.2} \t Ann nodes {:.2} \t Non-exec pure fn nodes {:.2}",
+                mean_stats.synth_time / 1000.,
                 mean_stats.rule_apps,
-                mean_stats.synth_time / 1000.
+                mean_stats.loc,
+                ann_overhead,
+                mean_stats.ast_nodes,
+                mean_stats.spec_ast,
+                pure_fn_nodes,
+                // mean_stats.ast_nodes_unsimp,
             )?;
+            if !is_eval {
+                // let pure_fns: std::collections::HashMap<_, _> = pure_fns.iter().filter(|(_, (exec, _))| !exec).collect();
+                if !pure_fns.is_empty() {
+                    write!(f, " \t | \t Pure functions (\"name\": (executable, ast_nodes)): {pure_fns:?}")?;
+                }
+            }
         }
-        write!(f, ")")?;
-        for (r, v) in &self.results {
-            write!(f, "\n  {} - ", r)?;
-            if let Some(sln) = v.get_solved() {
-                let first = sln.slns.first().unwrap();
-                write!(
-                    f,
-                    "{} [{}/{}/{}/{}]",
-                    format_ms(first.synth_time),
-                    first.loc,
-                    first.ast_nodes,
-                    first.ast_nodes_unsimp,
-                    first.rule_apps
-                )?;
-                for sln in sln.slns.iter().skip(1) {
+        if !is_eval {
+            for (r, v) in &self.results {
+                write!(f, "\n  {} - ", r)?;
+                if let Some(sln) = v.get_solved() {
+                    let first = sln.slns.first().unwrap();
                     write!(
                         f,
-                        ",  {} [{}/{}/{}/{}]",
-                        format_ms(sln.synth_time),
-                        sln.loc,
-                        sln.ast_nodes,
-                        sln.ast_nodes_unsimp,
-                        sln.rule_apps
+                        "{} [{}/{}/{}/{}]",
+                        format_ms(first.synth_time),
+                        first.loc,
+                        first.ast_nodes,
+                        first.ast_nodes_unsimp,
+                        first.rule_apps
                     )?;
+                    for sln in sln.slns.iter().skip(1) {
+                        write!(
+                            f,
+                            ",  {} [{}/{}/{}/{}]",
+                            format_ms(sln.synth_time),
+                            sln.loc,
+                            sln.ast_nodes,
+                            sln.ast_nodes_unsimp,
+                            sln.rule_apps
+                        )?;
+                    }
+                    write!(
+                        f,
+                        " | spec_ast: {}, pfn_ast: {:?}",
+                        sln.synth_ast, sln.pure_fn_ast
+                    )?;
+                } else {
+                    write!(f, "{:?}", v)?;
                 }
-                write!(
-                    f,
-                    " | spec_ast: {}, pfn_ast: {:?}",
-                    sln.synth_ast, sln.pure_fn_ast
-                )?;
-            } else {
-                write!(f, "{:?}", v)?;
             }
         }
         for child in &self.children {
             let child = child.to_string();
-            write!(f, "\n  ")?;
             write!(f, "{}", child.replace('\n', "\n  "))?;
         }
         Ok(())
@@ -144,7 +168,7 @@ fn all_tests() {
         .unwrap_or(300_000);
     let results = Category::run_tests_in_dir(PathBuf::from("./tests/synth/"), timeout);
     let max_ms = format_ms(results.max_ms());
-    println!("### Measured timings (max {max_ms}) ###");
+    print  !("### Measured timings (max {max_ms}) ###");
     println!("{results}");
     println!("#######################################");
     // Make sure this gets printed in the correct order in GitHub:

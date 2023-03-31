@@ -2,12 +2,12 @@
 
 use russol_contracts::*;
 
-enum Tree {
+enum Tree<T> {
     Leaf,
-    Node { f: i32, left: Box<Tree>, right: Box<Tree>, },
+    Node { f: T, left: Box<Tree<T>>, right: Box<Tree<T>>, },
 }
 
-impl Tree {
+impl<T> Tree<T> {
     #[pure]
     fn size(&self) -> usize {
         match self {
@@ -16,12 +16,14 @@ impl Tree {
         }
     }
     #[pure]
-    fn elems(&self) -> Set<i32> {
+    fn elems(&self) -> Set<T> {
         match self {
             Tree::Leaf => set!{},
             Tree::Node { f, left, right } => left.elems() + right.elems() + set!{f},
         }
     }
+}
+impl Tree<i32> {
     #[pure]
     fn ordered(&self) -> bool {
         match self {
