@@ -1,6 +1,6 @@
 use std::{
     process::{Command, Stdio},
-    time::{Duration, Instant}, thread::JoinHandle,
+    time::{Duration, Instant}, thread::JoinHandle, path::PathBuf,
 };
 
 use rustc_ast::LitIntType;
@@ -400,9 +400,10 @@ impl SuslikProgram {
         extern_fns: &Vec<RuslikFnSig<'tcx>>,
         timeout: u64,
     ) -> Option<SynthesisResult> {
+        let suslik_dir = Self::sbt_build_suslik();
         let params = sig.params.clone();
         match Self::from_fn_sig(tcx, pure_fns, extern_fns, sig) {
-            Ok(sp) => sp.send_to_suslik(&params, timeout),
+            Ok(sp) => sp.send_to_suslik(suslik_dir, &params, timeout),
             Err(err) => Some(SynthesisResult::Unsupported(err)),
         }
     }
@@ -413,16 +414,17 @@ impl SuslikProgram {
         extern_fns: &Vec<RuslikFnSig<'tcx>>,
         timeout: u64,
     ) -> JoinHandle<Option<SynthesisResult>> {
+        let suslik_dir = Self::sbt_build_suslik();
         let params = sig.params.clone();
         let sus_prog = Self::from_fn_sig(tcx, pure_fns, extern_fns, sig);
         std::thread::spawn(move ||
             match sus_prog {
-                Ok(sp) => sp.send_to_suslik(&params, timeout),
+                Ok(sp) => sp.send_to_suslik(suslik_dir, &params, timeout),
                 Err(err) => Some(SynthesisResult::Unsupported(err)),
             }
         )
     }
-    fn send_to_suslik(&self, params: &str, timeout: u64) -> Option<SynthesisResult> {
+    fn sbt_build_suslik() -> PathBuf {
         // Find suslik dir
         let suslik_dir = std::env::var("SUSLIK_DIR")
             .map(std::path::PathBuf::from)
@@ -441,17 +443,6 @@ impl SuslikProgram {
                 }
                 suslik_dir
             });
-        // Write program to tmp file
-        let data = format!("# -c 10 -o 10 -p false\n###\n{}", self);
-        let mut tmp = suslik_dir.clone();
-
-        use rand::Rng;
-        let num = rand::thread_rng().gen_range(0..10000);
-        let tmpdir = std::path::PathBuf::from(format!("tmp-{}-{num}", self.synth_fn.unique_name));
-        std::fs::create_dir_all(suslik_dir.join(&tmpdir)).unwrap();
-        let synfile = tmpdir.join(std::path::PathBuf::from("tmp.syn"));
-        tmp.push(&synfile);
-        std::fs::write(tmp.clone(), data).expect("Unable to write file");
         // Find suslik exe
         let mut jar_file = suslik_dir.clone();
         jar_file.extend(["target", "scala-2.12", "suslik.jar"]);
@@ -477,6 +468,21 @@ impl SuslikProgram {
                 jar_file.to_string_lossy()
             );
         }
+        suslik_dir
+    }
+
+    fn send_to_suslik(&self, suslik_dir: PathBuf, params: &str, timeout: u64) -> Option<SynthesisResult> {
+        // Write program to tmp file
+        let data = format!("# -c 10 -o 10 -p false\n###\n{}", self);
+        let mut tmp = suslik_dir.clone();
+
+        use rand::Rng;
+        let num = rand::thread_rng().gen_range(0..10000);
+        let tmpdir = std::path::PathBuf::from(format!("tmp-{}-{num}", self.synth_fn.unique_name));
+        std::fs::create_dir_all(suslik_dir.join(&tmpdir)).unwrap();
+        let synfile = tmpdir.join(std::path::PathBuf::from("tmp.syn"));
+        tmp.push(&synfile);
+        std::fs::write(tmp.clone(), data).expect("Unable to write file");
         // Run suslik on tmp file
         let mut provided_args = params
             .split(' ')
