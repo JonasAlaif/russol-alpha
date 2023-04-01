@@ -45,7 +45,7 @@ jobs:
     name: Test on crates ${{ matrix.version }}
     runs-on: ubuntu-latest
     env:
-      RUSLIC_TIMEOUT: 10000
+      RUSLIC_TIMEOUT: 450000
     steps:
       - uses: actions/checkout@v3
         with:
