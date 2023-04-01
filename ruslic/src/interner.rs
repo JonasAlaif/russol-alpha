@@ -101,6 +101,10 @@ pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: Hi
 }
 
 pub fn handle_result(result: SynthesisResult, times: &mut FxHashMap<String, SynthesisResult>, tcx: TyCtxt, def_id: DefId, name: String, multifn: bool) {
+    if let Some(sln) = result.get_solved() {
+        sln.print();
+    }
+
     // eprintln!("Synth for {:?} result: {:?}", def_id, result);
     let subst_result = std::env::var("RUSLIC_SUBST_RESULT")
         .map(|v| v.parse::<bool>().unwrap())

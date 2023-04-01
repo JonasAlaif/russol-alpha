@@ -269,28 +269,30 @@ impl Solved {
         pure_fn_ast: UsedPureFns,
         sln: String,
     ) -> Self {
-        let min_lines_print = std::env::var("RUSLIC_PRINT_SLN_ABOVE")
-            .map(|v| v.parse::<usize>().unwrap())
-            .unwrap_or(0);
         let idx = &mut 0;
         let slns: Vec<_> = sln
             .split("-----------------------------------------------------\n")
             .flat_map(|sln| Solution::new(sln, idx))
             .collect();
-        for sln in &slns {
-            if sln.loc > min_lines_print {
-                if slns.len() > 1 {
-                    println!("[Solution #{}]", sln.idx);
-                }
-                print!("{}", sln.code);
-            }
-        }
         Self {
             is_trivial,
             exec_time,
             synth_ast,
             pure_fn_ast,
             slns,
+        }
+    }
+    pub fn print(&self) {
+        let min_lines_print = std::env::var("RUSLIC_PRINT_SLN_ABOVE")
+            .map(|v| v.parse::<usize>().unwrap())
+            .unwrap_or(0);
+        for sln in &self.slns {
+            if sln.loc > min_lines_print {
+                if self.slns.len() > 1 {
+                    println!("[Solution #{}]", sln.idx);
+                }
+                print!("{}", sln.code);
+            }
         }
     }
 }
