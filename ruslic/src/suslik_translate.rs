@@ -516,7 +516,7 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                     Expr::Snap(futs, field)
                 }
             }
-            crate::ruslik_pure::ExprKind::Lit(l) => Expr::Lit(l.clone()),
+            crate::ruslik_pure::ExprKind::Lit(l) => Expr::Lit(l.into()),
             crate::ruslik_pure::ExprKind::BinOp(op, box l, box r) => {
                 assert!(param.is_none());
                 assert!(futs.is_empty());

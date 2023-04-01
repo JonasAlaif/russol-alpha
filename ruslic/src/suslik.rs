@@ -1,6 +1,6 @@
 use std::{
     process::{Command, Stdio},
-    time::{Duration, Instant},
+    time::{Duration, Instant}, thread::JoinHandle,
 };
 
 use rustc_ast::LitIntType;
@@ -36,7 +36,22 @@ impl From<&RustBinOp> for BinOp {
 }
 pub type RustBinOp = rustc_hir::BinOpKind;
 pub type UnOp = rustc_middle::mir::UnOp;
-pub type Lit = rustc_ast::ast::LitKind;
+#[derive(Debug, Clone)]
+pub enum Lit {
+    Int(u128, rustc_ast::ast::LitIntType),
+    Bool(bool),
+    Unsupported(String),
+}
+impl From<&rustc_ast::ast::LitKind> for Lit {
+    fn from(lit: &rustc_ast::ast::LitKind) -> Self {
+        match lit {
+            &rustc_ast::ast::LitKind::Int(i, t) => Lit::Int(i, t),
+            &rustc_ast::ast::LitKind::Bool(b) => Lit::Bool(b),
+            other => Lit::Unsupported(format!("{other:?}")),
+        }
+    }
+}
+// pub type Lit = rustc_ast::ast::LitKind;
 
 pub struct SuslikProgram {
     pub(crate) pred_map: PredMap,
@@ -389,6 +404,22 @@ impl SuslikProgram {
             Err(err) => Some(SynthesisResult::Unsupported(err)),
         }
     }
+    pub fn solve_in_thread<'tcx>(
+        tcx: TyCtxt<'tcx>,
+        sig: RuslikFnSig<'tcx>,
+        pure_fns: &PureFnMap<'tcx>,
+        extern_fns: &Vec<RuslikFnSig<'tcx>>,
+        timeout: u64,
+    ) -> JoinHandle<Option<SynthesisResult>> {
+        let params = sig.params.clone();
+        let sus_prog = Self::from_fn_sig(tcx, pure_fns, extern_fns, sig);
+        std::thread::spawn(move ||
+            match sus_prog {
+                Ok(sp) => sp.send_to_suslik(&params, timeout),
+                Err(err) => Some(SynthesisResult::Unsupported(err)),
+            }
+        )
+    }
     fn send_to_suslik(&self, params: &str, timeout: u64) -> Option<SynthesisResult> {
         // Find suslik dir
         let suslik_dir = std::env::var("SUSLIK_DIR")
@@ -412,7 +443,9 @@ impl SuslikProgram {
         let data = format!("# -c 10 -o 10 -p false\n###\n{}", self);
         let mut tmp = suslik_dir.clone();
 
-        let tmpdir = std::path::PathBuf::from(format!("tmp-{}", self.synth_fn.unique_name));
+        use rand::Rng;
+        let num = rand::thread_rng().gen_range(0..10000);
+        let tmpdir = std::path::PathBuf::from(format!("tmp-{}-{num}", self.synth_fn.unique_name));
         std::fs::create_dir_all(suslik_dir.join(&tmpdir)).unwrap();
         let synfile = tmpdir.join(std::path::PathBuf::from("tmp.syn"));
         tmp.push(&synfile);
