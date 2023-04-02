@@ -32,7 +32,7 @@ pub fn intern(tcx: TyCtxt, timeout: u64) -> Option<FxHashMap<String, SynthesisRe
 
     let multithreaded = std::env::var("RUSLIC_MULTITHREADED")
         .map(|v| v.parse::<usize>().unwrap())
-        .unwrap_or(1);
+        .unwrap_or(8);
     if multithreaded > 1 {
         solve_multithreaded(tcx, timeout, translator, multithreaded)
     } else {
@@ -98,7 +98,7 @@ pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: Hi
             timeout,
         );
     }
-    for _ in 0..thread_count {
+    for _ in 0..std::cmp::min(results.len(), thread_count) {
         let (idx, result) = rx.recv().unwrap();
         results[idx].1 = result;
     }
