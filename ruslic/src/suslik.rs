@@ -1,6 +1,6 @@
 use std::{
     process::{Command, Stdio},
-    time::{Duration, Instant}, thread::JoinHandle, path::PathBuf,
+    time::{Duration, Instant}, path::PathBuf, sync::mpsc::Sender,
 };
 
 use rustc_ast::LitIntType;
@@ -408,21 +408,24 @@ impl SuslikProgram {
         }
     }
     pub fn solve_in_thread<'tcx>(
+        tx: Sender<(usize, Option<SynthesisResult>)>,
+        id: usize,
         tcx: TyCtxt<'tcx>,
         sig: RuslikFnSig<'tcx>,
         pure_fns: &PureFnMap<'tcx>,
         extern_fns: &Vec<RuslikFnSig<'tcx>>,
         timeout: u64,
-    ) -> JoinHandle<Option<SynthesisResult>> {
+    ) {
         let suslik_dir = Self::sbt_build_suslik();
         let params = sig.params.clone();
         let sus_prog = Self::from_fn_sig(tcx, pure_fns, extern_fns, sig);
-        std::thread::spawn(move ||
-            match sus_prog {
+        std::thread::spawn(move || {
+            let result = match sus_prog {
                 Ok(sp) => sp.send_to_suslik(suslik_dir, &params, timeout),
                 Err(err) => Some(SynthesisResult::Unsupported(err)),
-            }
-        )
+            };
+            tx.send((id, result)).unwrap();
+        });
     }
     fn sbt_build_suslik() -> PathBuf {
         // Find suslik dir

@@ -31,10 +31,10 @@ pub fn intern(tcx: TyCtxt, timeout: u64) -> Option<FxHashMap<String, SynthesisRe
     }
 
     let multithreaded = std::env::var("RUSLIC_MULTITHREADED")
-        .map(|v| v.parse::<bool>().unwrap())
-        .unwrap_or(true);
-    if multithreaded {
-        solve_multithreaded(tcx, timeout, translator)
+        .map(|v| v.parse::<usize>().unwrap())
+        .unwrap_or(1);
+    if multithreaded > 1 {
+        solve_multithreaded(tcx, timeout, translator, multithreaded)
     } else {
         solve(tcx, timeout, translator)
     }
@@ -67,17 +67,26 @@ pub fn solve<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: HirTranslator<'t
     Some(times)
 }
 
-pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: HirTranslator<'tcx>) -> Option<FxHashMap<String, SynthesisResult>> {
-    let mut handles = Vec::new();
+pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: HirTranslator<'tcx>, thread_count: usize) -> Option<FxHashMap<String, SynthesisResult>> {
     let multifn = translator.impure_fns.len() > 1;
     let only_synth = translator.impure_fns.iter().any(|(s, _)| *s);
-    for (synth, sig) in translator.impure_fns.into_iter() {
-        if only_synth && !synth {
-            continue;
+    let impure_fns = if only_synth {
+        translator.impure_fns.into_iter().filter(|(s, _)| *s).collect()
+    } else {
+        translator.impure_fns
+    };
+    let mut results: Vec<(DefId, Option<SynthesisResult>)> = Vec::new();
+    let (tx, rx) = std::sync::mpsc::channel();
+    for (_, sig) in impure_fns.into_iter() {
+        results.push((sig.def_id, None));
+        if results.len() > thread_count {
+            let (idx, result) = rx.recv().unwrap();
+            let results: &mut (_, _) = &mut results[idx];
+            results.1 = result;
         }
-        let def_id = sig.def_id;
-        let name = tcx.def_path_str(def_id);
-        let handle = SuslikProgram::solve_in_thread(
+        SuslikProgram::solve_in_thread(
+            tx.clone(),
+            results.len() - 1,
             tcx,
             sig,
             &translator.pure_fns,
@@ -88,12 +97,16 @@ pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: Hi
                 .collect(),
             timeout,
         );
-        handles.push((handle, def_id, name));
+    }
+    for _ in 0..thread_count {
+        let (idx, result) = rx.recv().unwrap();
+        results[idx].1 = result;
     }
 
     let mut times = FxHashMap::default();
-    for (handle, def_id, name) in handles {
-        let result = handle.join().unwrap()?;
+    for (def_id, result) in results.into_iter() {
+        let name = tcx.def_path_str(def_id);
+        let result = result.unwrap();
         handle_result(result, &mut times, tcx, def_id, name, multifn);
     }
 

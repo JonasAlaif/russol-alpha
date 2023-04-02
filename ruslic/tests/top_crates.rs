@@ -230,6 +230,7 @@ fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
     let ruslic = cwd.join(["..", "target", dir, "ruslic"].iter().collect::<PathBuf>());
     let suslik = cwd.join(["..", "suslik"].iter().collect::<PathBuf>());
     let timeout = std::env::var("RUSLIC_TIMEOUT").unwrap_or("300000".to_string());
+    let mt = std::env::var("RUSLIC_MULTITHREADED").unwrap_or("12".to_string());
     let mut child = std::process::Command::new("cargo")
         .arg("check")
         .env("RUSTC_WRAPPER", ruslic)
@@ -243,6 +244,7 @@ fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
         .env("RUSLIC_SUMMARISE_JSON", "true")
         .env("RUSLIC_OUTPUT_TRACE", "true")
         .env("RUSLIC_SUMMARISE", "true")
+        .env("RUSLIC_MULTITHREADED", mt)
         .current_dir(&dirname)
         .stdout(std::process::Stdio::piped())
         .spawn()
