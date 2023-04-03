@@ -30,7 +30,7 @@ pub fn intern(tcx: TyCtxt, timeout: u64) -> Option<FxHashMap<String, SynthesisRe
         translator.translate(def_id);
     }
 
-    let multithreaded = std::env::var("RUSLIC_MULTITHREADED")
+    let multithreaded = std::env::var("RUSLIC_THREAD_COUNT")
         .map(|v| v.parse::<usize>().unwrap())
         .unwrap_or(8);
     if multithreaded > 1 {
