@@ -188,7 +188,7 @@ pub fn print_results(results: Vec<(String, Vec<SynthesisResult>)>) {
         print!("  {krate} | ");
         KrateResults::summarise(res.iter());
     }
-    print!("ALL | ");
+    print!("ALL {} | ", results.len());
     KrateResults::summarise(results.iter().flat_map(|(_, res)| res.iter()));
     println!();
 }

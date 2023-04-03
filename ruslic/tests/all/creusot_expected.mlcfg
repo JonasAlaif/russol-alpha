@@ -299,7 +299,7 @@ module Creusot_Impl0_PushLen
     _13 <- elem_2;
     elem_2 <- any t;
     _0 <- ([#"/all/creusot.rs" 49 35 49 54] push_len _12 _13);
-    goto BB11
+    goto BB12
   }
   BB2 {
     assume { Resolve0.resolve self_1 };
@@ -328,31 +328,32 @@ module Creusot_Impl0_PushLen
     assume { Resolve4.resolve _10 };
     _10 <- new_7;
     new_7 <- any Creusot_Node_Type.t_node t;
-    assume { Resolve4.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _10 };
     goto BB7
   }
   BB7 {
+    assume { Resolve4.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _10 };
+    _10 <- any Creusot_Node_Type.t_node t;
     assume { Resolve0.resolve self_1 };
     _0 <- ();
-    goto BB8
-  }
-  BB8 {
     goto BB9
   }
   BB9 {
     goto BB10
   }
   BB10 {
-    goto BB12
+    goto BB11
   }
   BB11 {
-    goto BB12
+    goto BB13
   }
   BB12 {
     goto BB13
   }
   BB13 {
+    goto BB14
+  }
+  BB14 {
     return _0
   }
   
@@ -447,16 +448,14 @@ module Creusot_Impl0_Push
     assume { Resolve0.resolve _12 };
     _12 <- new_9;
     new_9 <- any Creusot_Node_Type.t_node t;
-    assume { Resolve0.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _12 };
     goto BB5
   }
   BB5 {
+    assume { Resolve0.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _12 };
+    _12 <- any Creusot_Node_Type.t_node t;
     assume { Resolve3.resolve self_1 };
     _0 <- ();
-    goto BB6
-  }
-  BB6 {
     goto BB7
   }
   BB7 {
@@ -469,6 +468,9 @@ module Creusot_Impl0_Push
     goto BB10
   }
   BB10 {
+    goto BB11
+  }
+  BB11 {
     return _0
   }
   
@@ -588,8 +590,6 @@ module Creusot_Impl0_Pop
     _9 <- next_8;
     next_8 <- any Creusot_Node_Type.t_node t;
     assume { Resolve3.resolve next_8 };
-    assume { Resolve1.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _9 };
     goto BB5
   }
   BB3 {
@@ -601,20 +601,20 @@ module Creusot_Impl0_Pop
     assume { Resolve0.resolve self_1 };
     assume { Resolve1.resolve result_3 };
     _0 <- Core_Option_Option_Type.C_None;
-    goto BB10
+    goto BB11
   }
   BB5 {
+    assume { Resolve1.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _9 };
+    _9 <- any Creusot_Node_Type.t_node t;
     assume { Resolve0.resolve self_1 };
-    goto BB6
+    goto BB7
   }
-  BB6 {
+  BB7 {
     assume { Resolve2.resolve _10 };
     _10 <- elem_7;
     elem_7 <- any t;
     _0 <- Core_Option_Option_Type.C_Some _10;
-    goto BB7
-  }
-  BB7 {
     goto BB8
   }
   BB8 {
@@ -627,6 +627,9 @@ module Creusot_Impl0_Pop
     goto BB11
   }
   BB11 {
+    goto BB12
+  }
+  BB12 {
     return _0
   }
   
@@ -1005,7 +1008,7 @@ module Creusot_Impl1_PushLen
     _15 <- elem_2;
     elem_2 <- any t;
     _0 <- ([#"/all/creusot.rs" 129 34 129 55] push_len _14 _15);
-    goto BB13
+    goto BB14
   }
   BB2 {
     assume { Resolve0.resolve self_1 };
@@ -1041,16 +1044,14 @@ module Creusot_Impl1_PushLen
     assume { Resolve5.resolve _12 };
     _12 <- new_10;
     new_10 <- any Creusot_NodeAlt_Type.t_nodealt t;
-    assume { Resolve5.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _12 };
     goto BB8
   }
   BB8 {
+    assume { Resolve5.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _12 };
+    _12 <- any Creusot_NodeAlt_Type.t_nodealt t;
     assume { Resolve0.resolve self_1 };
     _0 <- ();
-    goto BB9
-  }
-  BB9 {
     goto BB10
   }
   BB10 {
@@ -1060,15 +1061,18 @@ module Creusot_Impl1_PushLen
     goto BB12
   }
   BB12 {
-    goto BB14
+    goto BB13
   }
   BB13 {
-    goto BB14
+    goto BB15
   }
   BB14 {
     goto BB15
   }
   BB15 {
+    goto BB16
+  }
+  BB16 {
     return _0
   }
   
@@ -1169,16 +1173,14 @@ module Creusot_Impl1_Push
     assume { Resolve1.resolve _14 };
     _14 <- new_12;
     new_12 <- any Creusot_NodeAlt_Type.t_nodealt t;
-    assume { Resolve1.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _14 };
     goto BB6
   }
   BB6 {
+    assume { Resolve1.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _14 };
+    _14 <- any Creusot_NodeAlt_Type.t_nodealt t;
     assume { Resolve4.resolve self_1 };
     _0 <- ();
-    goto BB7
-  }
-  BB7 {
     goto BB8
   }
   BB8 {
@@ -1194,6 +1196,9 @@ module Creusot_Impl1_Push
     goto BB12
   }
   BB12 {
+    goto BB13
+  }
+  BB13 {
     return _0
   }
   
@@ -1275,8 +1280,6 @@ module Creusot_Impl1_Pop
     assume { Resolve1.resolve _8 };
     _8 <- (let (_, a) = node_7 in a);
     node_7 <- (let (a, b) = node_7 in (a, any Creusot_NodeAlt_Type.t_nodealt t));
-    assume { Resolve1.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _8 };
     goto BB5
   }
   BB3 {
@@ -1288,21 +1291,21 @@ module Creusot_Impl1_Pop
     assume { Resolve0.resolve self_1 };
     assume { Resolve1.resolve result_3 };
     _0 <- Core_Option_Option_Type.C_None;
-    goto BB9
+    goto BB10
   }
   BB5 {
+    assume { Resolve1.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _8 };
+    _8 <- any Creusot_NodeAlt_Type.t_nodealt t;
     assume { Resolve0.resolve self_1 };
-    goto BB6
+    goto BB7
   }
-  BB6 {
+  BB7 {
     assume { Resolve3.resolve _9 };
     _9 <- (let (a, _) = node_7 in a);
     node_7 <- (let (a, b) = node_7 in (any t, b));
     assume { Resolve2.resolve node_7 };
     _0 <- Core_Option_Option_Type.C_Some _9;
-    goto BB7
-  }
-  BB7 {
     goto BB8
   }
   BB8 {
@@ -1312,6 +1315,9 @@ module Creusot_Impl1_Pop
     goto BB10
   }
   BB10 {
+    goto BB11
+  }
+  BB11 {
     return _0
   }
   
@@ -1556,12 +1562,12 @@ module Creusot_BorrowIn
   }
   
 end
-module Core_Num_Impl8_Max_Stub
+module Core_Num_Impl7_Max_Stub
   use prelude.Int
   use prelude.UInt16
   val constant mAX'  : uint16
 end
-module Core_Num_Impl8_Max
+module Core_Num_Impl7_Max
   use prelude.Int
   use prelude.UInt16
   let constant mAX'  : uint16 = [@vc:do_not_keep_trace] [@vc:sp]
@@ -1571,7 +1577,7 @@ module Creusot_WriteAndReborrow_Interface
   use prelude.Borrow
   use prelude.Int
   use prelude.UInt16
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   val write_and_reborrow [#"/all/creusot.rs" 196 0 196 62] (x : borrowed (borrowed uint16)) (y : borrowed uint16) : ()
     requires {[#"/all/creusot.rs" 193 11 193 31]  *  * x +  * y <= Max0.mAX'}
     ensures { [#"/all/creusot.rs" 194 10 194 25]  *  ^ x =  *  * x +  * y }
@@ -1586,7 +1592,7 @@ module Creusot_WriteAndReborrow
     type t = borrowed uint16
   clone CreusotContracts_Resolve_Impl1_Resolve as Resolve0 with
     type t = uint16
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   let rec cfg write_and_reborrow [#"/all/creusot.rs" 196 0 196 62] [@cfg:stackify] [@cfg:subregion_analysis] (x : borrowed (borrowed uint16)) (y : borrowed uint16) : ()
     requires {[#"/all/creusot.rs" 193 11 193 31]  *  * x +  * y <= Max0.mAX'}
     ensures { [#"/all/creusot.rs" 194 10 194 25]  *  ^ x =  *  * x +  * y }
@@ -1722,7 +1728,7 @@ module Core_Clone_Clone_Clone_Interface
   type self
   use prelude.Borrow
   val clone' (self : self) : self
-    ensures { [#"/all/creusot.rs" 986 1 1000 32] result = self }
+    ensures { [#"/all/creusot.rs" 1054 10 1069 33] result = self }
     
 end
 module Creusot_CloneCheck1_Interface
@@ -1938,7 +1944,7 @@ module CreusotContracts_Logic_Set_Impl0_Insert
   type t
   use set.Set
   function insert [@inline:trivial] (self : Set.set t) (e : t) : Set.set t =
-    [#"/all/creusot.rs" 933 27 933 45] Set.add e self
+    [#"/all/creusot.rs" 997 23 998 10] Set.add e self
   val insert [@inline:trivial] (self : Set.set t) (e : t) : Set.set t
     ensures { result = insert self e }
     
@@ -2149,7 +2155,6 @@ module Creusot_Impl5_ElemsEq
       end
     | _ -> true
     end)
-  axiom elems_eq_spec : forall self : Creusot_Node_Type.t_node int32 . true
 end
 module Creusot_Impl5_ElemsEq_Impl
   use prelude.Int
@@ -2194,7 +2199,6 @@ module Creusot_Impl5_LenGt0
     | Creusot_Node_Type.C_Nil -> 0
     | Creusot_Node_Type.C_Cons _ next -> 1 + Len0.len next
     end)
-  axiom len_gt0_spec : forall self : Creusot_Node_Type.t_node int32 . true
 end
 module Creusot_Impl5_LenGt0_Impl
   use prelude.Int
@@ -2218,7 +2222,7 @@ module Creusot_Impl5_CalcLen_Interface
   use prelude.Int
   use prelude.Int32
   use Creusot_Node_Type as Creusot_Node_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   clone Creusot_Impl5_LenGt0_Stub as LenGt00 with
     axiom .
   val calc_len [#"/all/creusot.rs" 344 4 344 33] (self : borrowed (Creusot_Node_Type.t_node int32)) : uint16
@@ -2243,7 +2247,7 @@ module Creusot_Impl5_CalcLen
     type t = Creusot_Node_Type.t_node int32
   clone CreusotContracts_Resolve_Impl1_Resolve as Resolve0 with
     type t = Creusot_Node_Type.t_node int32
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   clone Creusot_Impl5_LenGt0 as LenGt00 with
     function Len0.len = Len0.len,
     axiom .
@@ -2627,7 +2631,6 @@ module Creusot_Impl7_Elems
     | Creusot_Tree_Type.C_Leaf -> Set.empty 
     | Creusot_Tree_Type.C_Node f left right -> Insert0.insert (Set.union (elems left) (elems right)) f
     end)
-  axiom elems_spec : forall self : Creusot_Tree_Type.t_tree t . true
 end
 module Creusot_Impl7_Elems_Impl
   type t
@@ -2872,8 +2875,8 @@ module Creusot_Impl8_Insert
     _21 <- de_18;
     _19 <- ([#"/all/creusot.rs" 558 13 558 19] _20 < _21);
     switch (_19)
-      | False -> goto BB15
-      | True -> goto BB13
+      | False -> goto BB16
+      | True -> goto BB14
       end
   }
   BB2 {
@@ -2905,15 +2908,13 @@ module Creusot_Impl8_Insert
   BB7 {
     _14 <- new_10;
     new_10 <- any Creusot_Tree_Type.t_tree int32;
-    self_1 <- { self_1 with current = _14 };
     goto BB8
   }
   BB8 {
+    self_1 <- { self_1 with current = _14 };
+    _14 <- any Creusot_Tree_Type.t_tree int32;
     assume { Resolve0.resolve self_1 };
     _0 <- ();
-    goto BB9
-  }
-  BB9 {
     goto BB10
   }
   BB10 {
@@ -2923,53 +2924,56 @@ module Creusot_Impl8_Insert
     goto BB12
   }
   BB12 {
-    goto BB21
+    goto BB13
   }
   BB13 {
+    goto BB22
+  }
+  BB14 {
     assume { Resolve2.resolve right_17 };
     _22 <- borrow_mut ( * left_16);
     left_16 <- { left_16 with current = ( ^ _22) };
     assume { Resolve2.resolve left_16 };
     _23 <- v_2;
     _0 <- ([#"/all/creusot.rs" 558 22 558 36] insert _22 _23);
-    goto BB14
-  }
-  BB14 {
-    goto BB20
+    goto BB15
   }
   BB15 {
+    goto BB21
+  }
+  BB16 {
     assume { Resolve2.resolve left_16 };
     _25 <- de_18;
     _26 <- v_2;
     _24 <- ([#"/all/creusot.rs" 558 47 558 53] _25 < _26);
     switch (_24)
-      | False -> goto BB18
-      | True -> goto BB16
+      | False -> goto BB19
+      | True -> goto BB17
       end
   }
-  BB16 {
+  BB17 {
     _27 <- borrow_mut ( * right_17);
     right_17 <- { right_17 with current = ( ^ _27) };
     assume { Resolve2.resolve right_17 };
     _28 <- v_2;
     _0 <- ([#"/all/creusot.rs" 558 56 558 71] insert _27 _28);
-    goto BB17
-  }
-  BB17 {
-    goto BB19
+    goto BB18
   }
   BB18 {
-    assume { Resolve2.resolve right_17 };
-    _0 <- ();
-    goto BB19
+    goto BB20
   }
   BB19 {
+    assume { Resolve2.resolve right_17 };
+    _0 <- ();
     goto BB20
   }
   BB20 {
     goto BB21
   }
   BB21 {
+    goto BB22
+  }
+  BB22 {
     return _0
   }
   
@@ -2992,12 +2996,12 @@ module Creusot_OptionCustom_Type
       | C_Right _ -> any int16
       end
 end
-module Core_Num_Impl2_Max_Stub
+module Core_Num_Impl1_Max_Stub
   use prelude.Int
   use prelude.Int16
   val constant mAX'  : int16
 end
-module Core_Num_Impl2_Max
+module Core_Num_Impl1_Max
   use prelude.Int
   use prelude.Int16
   let constant mAX'  : int16 = [@vc:do_not_keep_trace] [@vc:sp]
@@ -3007,7 +3011,7 @@ module Creusot_SwapEnums_Interface
   use prelude.Int
   use prelude.Borrow
   use prelude.Int16
-  clone Core_Num_Impl2_Max_Stub as Max0
+  clone Core_Num_Impl1_Max_Stub as Max0
   use Creusot_OptionCustom_Type as Creusot_OptionCustom_Type
   val swap_enums [#"/all/creusot.rs" 574 0 574 47] (i : Creusot_OptionCustom_Type.t_optioncustom) : Creusot_OptionCustom_Type.t_optioncustom
     requires {[#"/all/creusot.rs" 565 11 568 1] match (i) with
@@ -3026,7 +3030,7 @@ module Creusot_SwapEnums
   use prelude.Int
   use prelude.IntSize
   use prelude.Int16
-  clone Core_Num_Impl2_Max as Max0
+  clone Core_Num_Impl1_Max as Max0
   use Creusot_OptionCustom_Type as Creusot_OptionCustom_Type
   let rec cfg swap_enums [#"/all/creusot.rs" 574 0 574 47] [@cfg:stackify] [@cfg:subregion_analysis] (i : Creusot_OptionCustom_Type.t_optioncustom) : Creusot_OptionCustom_Type.t_optioncustom
     requires {[#"/all/creusot.rs" 565 11 568 1] match (i) with
@@ -3645,16 +3649,14 @@ module Creusot_Impl10_Push
     assume { Resolve2.resolve _14 };
     _14 <- new_12;
     new_12 <- any Core_Option_Option_Type.t_option (Creusot_NodeSll_Type.t_nodesll t);
-    assume { Resolve2.resolve (Creusot_ListSll_Type.listsll_head ( * self_1)) };
-    self_1 <- { self_1 with current = (let Creusot_ListSll_Type.C_ListSLL a =  * self_1 in Creusot_ListSll_Type.C_ListSLL _14) };
     goto BB6
   }
   BB6 {
+    assume { Resolve2.resolve (Creusot_ListSll_Type.listsll_head ( * self_1)) };
+    self_1 <- { self_1 with current = (let Creusot_ListSll_Type.C_ListSLL a =  * self_1 in Creusot_ListSll_Type.C_ListSLL _14) };
+    _14 <- any Core_Option_Option_Type.t_option (Creusot_NodeSll_Type.t_nodesll t);
     assume { Resolve5.resolve self_1 };
     _0 <- ();
-    goto BB7
-  }
-  BB7 {
     goto BB8
   }
   BB8 {
@@ -3670,6 +3672,9 @@ module Creusot_Impl10_Push
     goto BB12
   }
   BB12 {
+    goto BB13
+  }
+  BB13 {
     return _0
   }
   
@@ -3772,28 +3777,26 @@ module Creusot_Impl10_Pop
     assume { Resolve1.resolve self_1 };
     assume { Resolve2.resolve result_3 };
     _0 <- Core_Option_Option_Type.C_None;
-    goto BB10
+    goto BB11
   }
   BB5 {
     assume { Resolve2.resolve _10 };
     _10 <- Creusot_NodeSll_Type.nodesll_next _0_7;
     _0_7 <- (let Creusot_NodeSll_Type.C_NodeSLL a b = _0_7 in Creusot_NodeSll_Type.C_NodeSLL a (any Core_Option_Option_Type.t_option (Creusot_NodeSll_Type.t_nodesll t)));
     assume { Resolve3.resolve _0_7 };
-    assume { Resolve2.resolve (Creusot_ListSll_Type.listsll_head ( * self_1)) };
-    self_1 <- { self_1 with current = (let Creusot_ListSll_Type.C_ListSLL a =  * self_1 in Creusot_ListSll_Type.C_ListSLL _10) };
     goto BB6
   }
   BB6 {
+    assume { Resolve2.resolve (Creusot_ListSll_Type.listsll_head ( * self_1)) };
+    self_1 <- { self_1 with current = (let Creusot_ListSll_Type.C_ListSLL a =  * self_1 in Creusot_ListSll_Type.C_ListSLL _10) };
+    _10 <- any Core_Option_Option_Type.t_option (Creusot_NodeSll_Type.t_nodesll t);
     assume { Resolve1.resolve self_1 };
-    goto BB7
-  }
-  BB7 {
-    assume { Resolve5.resolve _0 };
-    _0 <- result_8;
-    result_8 <- any Core_Option_Option_Type.t_option t;
     goto BB8
   }
   BB8 {
+    assume { Resolve5.resolve _0 };
+    _0 <- result_8;
+    result_8 <- any Core_Option_Option_Type.t_option t;
     goto BB9
   }
   BB9 {
@@ -3803,6 +3806,9 @@ module Creusot_Impl10_Pop
     goto BB11
   }
   BB11 {
+    goto BB12
+  }
+  BB12 {
     return _0
   }
   
@@ -4637,15 +4643,13 @@ module Creusot_Impl17_PrependValue
   BB4 {
     _13 <- new_11;
     new_11 <- any Core_Option_Option_Type.t_option (Creusot_LinkedListNode_Type.t_linkedlistnode);
-    self_1 <- { self_1 with current = (let Creusot_LinkedList_Type.C_LinkedList a =  * self_1 in Creusot_LinkedList_Type.C_LinkedList _13) };
     goto BB5
   }
   BB5 {
+    self_1 <- { self_1 with current = (let Creusot_LinkedList_Type.C_LinkedList a =  * self_1 in Creusot_LinkedList_Type.C_LinkedList _13) };
+    _13 <- any Core_Option_Option_Type.t_option (Creusot_LinkedListNode_Type.t_linkedlistnode);
     assume { Resolve1.resolve self_1 };
     _0 <- ();
-    goto BB6
-  }
-  BB6 {
     goto BB7
   }
   BB7 {
@@ -4658,6 +4662,9 @@ module Creusot_Impl17_PrependValue
     goto BB10
   }
   BB10 {
+    goto BB11
+  }
+  BB11 {
     return _0
   }
   
@@ -4776,7 +4783,7 @@ module Creusot_Impl19_SllAppend
     _8 <- tl_2;
     tl_2 <- any Creusot_Node_Type.t_node t;
     _0 <- ([#"/all/creusot.rs" 949 35 949 54] sll_append _7 _8);
-    goto BB7
+    goto BB8
   }
   BB3 {
     assume { Resolve0.resolve self_1 };
@@ -4787,25 +4794,26 @@ module Creusot_Impl19_SllAppend
     assume { Resolve1.resolve _5 };
     _5 <- tl_2;
     tl_2 <- any Creusot_Node_Type.t_node t;
-    assume { Resolve1.resolve ( * self_1) };
-    self_1 <- { self_1 with current = _5 };
     goto BB5
   }
   BB5 {
+    assume { Resolve1.resolve ( * self_1) };
+    self_1 <- { self_1 with current = _5 };
+    _5 <- any Creusot_Node_Type.t_node t;
     assume { Resolve0.resolve self_1 };
     _0 <- ();
-    goto BB6
-  }
-  BB6 {
-    goto BB8
+    goto BB7
   }
   BB7 {
-    goto BB8
+    goto BB9
   }
   BB8 {
     goto BB9
   }
   BB9 {
+    goto BB10
+  }
+  BB10 {
     return _0
   }
   
@@ -4922,7 +4930,7 @@ module Creusot_Impl19_SllLen_Interface
   use prelude.Int
   use prelude.Borrow
   use Creusot_Node_Type as Creusot_Node_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   clone Creusot_Impl0_Len_Stub as Len0 with
     type t = t,
     axiom .
@@ -4944,7 +4952,7 @@ module Creusot_Impl19_SllLen
     type self = Creusot_Node_Type.t_node t
   clone CreusotContracts_Resolve_Resolve_Resolve_Interface as Resolve0 with
     type self = Creusot_Node_Type.t_node t
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   clone Creusot_Impl0_Len as Len0 with
     type t = t,
     axiom .
@@ -5080,7 +5088,6 @@ module Creusot_Impl20_IsSorted
       | Creusot_Node_Type.C_Cons e _ -> elem <= e /\ is_sorted next
       end
     end)
-  axiom is_sorted_spec : forall self : Creusot_Node_Type.t_node uint16 . true
 end
 module Creusot_Impl20_IsSorted_Impl
   use prelude.Int
@@ -5094,7 +5101,7 @@ module Creusot_Impl20_IsSorted_Impl
       | Creusot_Node_Type.C_Nil -> true
       | Creusot_Node_Type.C_Cons elem next -> match (next) with
         | Creusot_Node_Type.C_Nil -> true
-        | Creusot_Node_Type.C_Cons e _ -> elem <= e && is_sorted next
+        | Creusot_Node_Type.C_Cons e _ -> pure {elem <= e} && is_sorted next
         end
       end
 end
@@ -5363,7 +5370,7 @@ module Creusot_Impl21_TreeSize_Interface
   use prelude.Int
   use prelude.Borrow
   use Creusot_Tree_Type as Creusot_Tree_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   clone Creusot_Impl7_Size_Stub as Size0 with
     type t = t,
     axiom .
@@ -5385,7 +5392,7 @@ module Creusot_Impl21_TreeSize
     type self = Creusot_Tree_Type.t_tree t
   clone CreusotContracts_Resolve_Resolve_Resolve_Interface as Resolve0 with
     type self = Creusot_Tree_Type.t_tree t
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   clone Creusot_Impl7_Size as Size0 with
     type t = t,
     axiom .
@@ -5647,7 +5654,7 @@ module Creusot_Impl25_SumX_Interface
   use prelude.Int
   use prelude.Borrow
   use Creusot_Node_Type as Creusot_Node_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   clone Creusot_Impl25_Sum_Stub as Sum0 with
     axiom .
   val sum_x [#"/all/creusot.rs" 1413 4 1413 26] (self : Creusot_Node_Type.t_node uint16) : uint16
@@ -5660,7 +5667,7 @@ module Creusot_Impl25_SumX
   use prelude.UInt16
   use prelude.Borrow
   use prelude.IntSize
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   use Creusot_Node_Type as Creusot_Node_Type
   clone Creusot_Impl25_Sum as Sum0 with
     axiom .
@@ -6061,7 +6068,7 @@ module Creusot_Impl26_Deposit_Interface
   use prelude.Int
   use prelude.UInt16
   use Creusot_Account_Type as Creusot_Account_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   clone Creusot_Impl26_Balance_Stub as Balance0
   val deposit [#"/all/creusot.rs" 1479 4 1479 38] (self : borrowed (Creusot_Account_Type.t_account)) (amount : uint16) : ()
     requires {[#"/all/creusot.rs" 1477 15 1477 50] Balance0.balance ( * self) + amount <= Max0.mAX'}
@@ -6075,7 +6082,7 @@ module Creusot_Impl26_Deposit
   use Creusot_Account_Type as Creusot_Account_Type
   clone CreusotContracts_Resolve_Impl1_Resolve as Resolve0 with
     type t = Creusot_Account_Type.t_account
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   clone Creusot_Impl26_Balance as Balance0
   let rec cfg deposit [#"/all/creusot.rs" 1479 4 1479 38] [@cfg:stackify] [@cfg:subregion_analysis] (self : borrowed (Creusot_Account_Type.t_account)) (amount : uint16) : ()
     requires {[#"/all/creusot.rs" 1477 15 1477 50] Balance0.balance ( * self) + amount <= Max0.mAX'}
@@ -6171,7 +6178,7 @@ module Creusot_Impl26_Transfer_Interface
   use prelude.Int
   use prelude.UInt16
   use Creusot_Account_Type as Creusot_Account_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   clone Creusot_Impl26_Balance_Stub as Balance0
   val transfer [#"/all/creusot.rs" 1497 4 1497 60] (self : borrowed (Creusot_Account_Type.t_account)) (other : borrowed (Creusot_Account_Type.t_account)) (amount : uint16) : ()
     requires {[#"/all/creusot.rs" 1493 15 1493 51] Balance0.balance ( * other) + amount <= Max0.mAX'}
@@ -6187,7 +6194,7 @@ module Creusot_Impl26_Transfer
   use Creusot_Account_Type as Creusot_Account_Type
   clone CreusotContracts_Resolve_Impl1_Resolve as Resolve0 with
     type t = Creusot_Account_Type.t_account
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   clone Creusot_Impl26_Balance as Balance0
   let rec cfg transfer [#"/all/creusot.rs" 1497 4 1497 60] [@cfg:stackify] [@cfg:subregion_analysis] (self : borrowed (Creusot_Account_Type.t_account)) (other : borrowed (Creusot_Account_Type.t_account)) (amount : uint16) : ()
     requires {[#"/all/creusot.rs" 1493 15 1493 51] Balance0.balance ( * other) + amount <= Max0.mAX'}
@@ -6722,7 +6729,7 @@ end
 module Creusot_Add_Interface
   use prelude.Int
   use prelude.UInt16
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   val add [#"/all/creusot.rs" 1623 0 1623 39] (a : uint16) (b : uint16) : uint16
     requires {[#"/all/creusot.rs" 1621 11 1621 29] Max0.mAX' - a >= b}
     ensures { [#"/all/creusot.rs" 1622 10 1622 27] result = a + b }
@@ -6731,7 +6738,7 @@ end
 module Creusot_Add
   use prelude.Int
   use prelude.UInt16
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   let rec cfg add [#"/all/creusot.rs" 1623 0 1623 39] [@cfg:stackify] [@cfg:subregion_analysis] (a : uint16) (b : uint16) : uint16
     requires {[#"/all/creusot.rs" 1621 11 1621 29] Max0.mAX' - a >= b}
     ensures { [#"/all/creusot.rs" 1622 10 1622 27] result = a + b }
@@ -6782,7 +6789,7 @@ module Creusot_ShiftX_Interface
   use prelude.Int
   use prelude.UInt16
   use Creusot_Point_Type as Creusot_Point_Type
-  clone Core_Num_Impl8_Max_Stub as Max0
+  clone Core_Num_Impl7_Max_Stub as Max0
   val shift_x [#"/all/creusot.rs" 1629 0 1629 37] (p : Creusot_Point_Type.t_point) (s : uint16) : Creusot_Point_Type.t_point
     requires {[#"/all/creusot.rs" 1626 11 1626 31] Max0.mAX' - Creusot_Point_Type.point_x p >= s}
     ensures { [#"/all/creusot.rs" 1627 10 1627 31] Creusot_Point_Type.point_x result = Creusot_Point_Type.point_x p + s }
@@ -6792,7 +6799,7 @@ end
 module Creusot_ShiftX
   use prelude.Int
   use prelude.UInt16
-  clone Core_Num_Impl8_Max as Max0
+  clone Core_Num_Impl7_Max as Max0
   use Creusot_Point_Type as Creusot_Point_Type
   let rec cfg shift_x [#"/all/creusot.rs" 1629 0 1629 37] [@cfg:stackify] [@cfg:subregion_analysis] (p : Creusot_Point_Type.t_point) (s : uint16) : Creusot_Point_Type.t_point
     requires {[#"/all/creusot.rs" 1626 11 1626 31] Max0.mAX' - Creusot_Point_Type.point_x p >= s}
