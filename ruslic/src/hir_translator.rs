@@ -116,10 +116,13 @@ impl<'tcx> HirTranslator<'tcx> {
                         .collect();
                     // Get return value
                     let gen_sig = self.tcx.fn_sig(def_id);
-                    let sig: rustc_middle::ty::FnSig = self.tcx.liberate_late_bound_regions(def_id, gen_sig);
-                    let executable = sig.inputs().len() == 1 &&
-                        !sig.inputs()[0].to_string().starts_with("russol_contracts::") &&
-                        !sig.output().to_string().starts_with("russol_contracts::");
+                    let sig: rustc_middle::ty::FnSig =
+                        self.tcx.liberate_late_bound_regions(def_id, gen_sig);
+                    let executable = sig.inputs().len() == 1
+                        && !sig.inputs()[0]
+                            .to_string()
+                            .starts_with("russol_contracts::")
+                        && !sig.output().to_string().starts_with("russol_contracts::");
                     let pure_fn = PureFn {
                         def_id,
                         arg_names,

@@ -1,6 +1,8 @@
 use std::{
+    path::PathBuf,
     process::{Command, Stdio},
-    time::{Duration, Instant}, path::PathBuf, sync::mpsc::Sender,
+    sync::mpsc::Sender,
+    time::{Duration, Instant},
 };
 
 use rustc_ast::LitIntType;
@@ -474,7 +476,12 @@ impl SuslikProgram {
         suslik_dir
     }
 
-    fn send_to_suslik(&self, suslik_dir: PathBuf, params: &str, timeout: u64) -> Option<SynthesisResult> {
+    fn send_to_suslik(
+        &self,
+        suslik_dir: PathBuf,
+        params: &str,
+        timeout: u64,
+    ) -> Option<SynthesisResult> {
         // Write program to tmp file
         let data = format!("# -c 10 -o 10 -p false\n###\n{}", self);
         let mut tmp = suslik_dir.clone();
@@ -599,7 +606,12 @@ impl SuslikProgram {
             pure_fn_ast: ssig
                 .used_pure_fns
                 .into_iter()
-                .map(|pfn| (tcx.def_path_str(pfn.def_id), (pfn.executable, pfn.ast_nodes)))
+                .map(|pfn| {
+                    (
+                        tcx.def_path_str(pfn.def_id),
+                        (pfn.executable, pfn.ast_nodes),
+                    )
+                })
                 .collect(),
         };
         res.normalize();

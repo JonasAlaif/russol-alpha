@@ -1,0 +1,1 @@
+ALL 100 | Timeout 9, Unsolvable 298, Unsupported 11460, Solved 2364 (trivial 1036, non-trivial 1328) | Trivial: Time 0.27s [1.01 LOC/18.45 Rules] / Non-trivial: Time 0.72s [1.41 LOC/20.81 Rules] | Unsupported due to: Other 9, RequiresFlag 262, Unsafe 5141, LateBoundRegion 7, OtherTy 1486, ArraySlice 3066, Closure 58, CharFloat 883, UnnamedArgs 331, NonExhaustive 217, 

@@ -1,0 +1,17 @@
+### Measured timings (max 15_463ms) ###
+paper                  Solved 115 	 Time 1.0s 	 SOL rules 26.49 	 Rust LOC 5.36 	 Code/Spec 1.37 | Overhead data: Sln nodes 16.65 	 Ann nodes 11.26 	 Non-exec pure fn nodes 0.90
+  rust                   Solved 50 	 Time 1.3s 	 SOL rules 32.98 	 Rust LOC 6.16 	 Code/Spec 1.27 | Overhead data: Sln nodes 19.20 	 Ann nodes 14.42 	 Non-exec pure fn nodes 0.72
+    a-sll_tutorial         Solved 7 	 Time 1.0s 	 SOL rules 36.71 	 Rust LOC 6.29 	 Code/Spec 1.09 | Overhead data: Sln nodes 20.57 	 Ann nodes 18.86 	 Non-exec pure fn nodes 0.00
+    b-stackoverflow        Solved 4 	 Time 0.3s 	 SOL rules 28.50 	 Rust LOC 4.75 	 Code/Spec 2.00 | Overhead data: Sln nodes 17.00 	 Ann nodes 8.50 	 Non-exec pure fn nodes 0.00
+    c-custom               Solved 39 	 Time 1.5s 	 SOL rules 32.77 	 Rust LOC 6.28 	 Code/Spec 1.27 | Overhead data: Sln nodes 19.18 	 Ann nodes 14.23 	 Non-exec pure fn nodes 0.92
+  suslik                 Solved 18 	 Time 2.1s 	 SOL rules 49.28 	 Rust LOC 12.78 	 Code/Spec 2.84 | Overhead data: Sln nodes 36.44 	 Ann nodes 7.06 	 Non-exec pure fn nodes 5.78
+    a-integers             Solved 1 	 Time 0.2s 	 SOL rules 19.00 	 Rust LOC 4.00 	 Code/Spec 2.25 | Overhead data: Sln nodes 18.00 	 Ann nodes 8.00 	 Non-exec pure fn nodes 0.00
+    b-singly_linked_list   Solved 7 	 Time 0.8s 	 SOL rules 41.43 	 Rust LOC 10.14 	 Code/Spec 2.90 | Overhead data: Sln nodes 28.57 	 Ann nodes 7.57 	 Non-exec pure fn nodes 2.29
+    c-sorted_list          Solved 2 	 Time 0.3s 	 SOL rules 26.50 	 Rust LOC 5.00 	 Code/Spec 0.82 | Overhead data: Sln nodes 16.00 	 Ann nodes 11.50 	 Non-exec pure fn nodes 8.00
+    d-list_of_lists        Solved 1 	 Time 1.3s 	 SOL rules 50.00 	 Rust LOC 15.00 	 Code/Spec 1.02 | Overhead data: Sln nodes 41.00 	 Ann nodes 5.00 	 Non-exec pure fn nodes 35.00
+    e-binary_tree          Solved 5 	 Time 2.0s 	 SOL rules 58.60 	 Rust LOC 16.00 	 Code/Spec 3.50 | Overhead data: Sln nodes 44.80 	 Ann nodes 5.60 	 Non-exec pure fn nodes 7.20
+    f-rose_tree            Solved 2 	 Time 10.4s 	 SOL rules 91.00 	 Rust LOC 25.00 	 Code/Spec 2.31 | Overhead data: Sln nodes 70.50 	 Ann nodes 5.00 	 Non-exec pure fn nodes 25.50
+  verifier               Solved 47 	 Time 0.1s 	 SOL rules 10.85 	 Rust LOC 1.66 	 Code/Spec 0.67 | Overhead data: Sln nodes 6.36 	 Ann nodes 9.51 	 Non-exec pure fn nodes 0.00
+    a-prusti               Solved 41 	 Time 0.1s 	 SOL rules 9.39 	 Rust LOC 1.44 	 Code/Spec 0.63 | Overhead data: Sln nodes 5.46 	 Ann nodes 8.66 	 Non-exec pure fn nodes 0.00
+    b-creusot              Solved 6 	 Time 0.2s 	 SOL rules 20.83 	 Rust LOC 3.17 	 Code/Spec 0.82 | Overhead data: Sln nodes 12.50 	 Ann nodes 15.33 	 Non-exec pure fn nodes 0.00
+#######################################

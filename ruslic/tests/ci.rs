@@ -6,18 +6,23 @@ struct Category {
     dir: String,
     results: Vec<(String, SynthesisResult)>,
     children: Vec<Category>,
-    // solutions: Vec<Solved>,
+    depth: u32,
 }
 impl Category {
-    fn run_tests_in_dir(dir: PathBuf, timeout: u64) -> Self {
+    fn run_tests_in_dir(dir: PathBuf, timeout: u64, depth: u32) -> Self {
         let mut cat = Self {
             dir: dir.file_name().unwrap().to_string_lossy().to_string(),
             results: Vec::new(),
             children: Vec::new(),
-            // solutions: Vec::new(),
+            depth,
         };
-        for path in std::fs::read_dir(dir).unwrap() {
-            let path = path.unwrap();
+        let mut paths: Vec<_> = std::fs::read_dir(dir)
+            .unwrap()
+            .map(|r| r.unwrap())
+            .collect();
+        paths.sort_by_key(|dir| dir.path());
+
+        for path in paths {
             if path.file_type().unwrap().is_file() {
                 let filename = path.file_name();
                 let filename = filename.to_string_lossy();
@@ -47,7 +52,7 @@ impl Category {
                     }
                 }
             } else {
-                let results = Self::run_tests_in_dir(path.path(), timeout);
+                let results = Self::run_tests_in_dir(path.path(), timeout, depth + 1);
                 cat.children.push(results)
             }
         }
@@ -78,33 +83,32 @@ impl Category {
 
 impl Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let is_eval = std::env::var("RUSLIC_EVAL").ok().map(|s| s.parse::<bool>().unwrap()).unwrap_or(false);
-        if is_eval {
-            if !["paper", "rust", "stack_tut", "stackoverflow", "custom", "verifier", "prusti", "creusot",
-                            "suslik", "tree", "rose-tree", "multi-list", "sll", "srtl", "integers"].into_iter().any(|s|
-                s == &self.dir
-            ) {
-                for child in &self.children {
-                    write!(f, "{child}")?;
-                }
-                return Ok(());
-            }
+        let is_eval = std::env::var("RUSLIC_EVAL")
+            .ok()
+            .map(|s| s.parse::<bool>().unwrap())
+            .unwrap_or(false);
+        if is_eval && self.depth > 2 {
+            return Ok(());
         }
         let solved = self.solved().count();
-        write!(f, "\n{0} \t Solved {solved}", self.dir)?;
+        write!(f, "\n{: <22} Solved {solved}", self.dir)?;
         if solved > 0 {
             let (pure_fns, mean_stats) = MeanStats::calculate(self.solved());
             let mean_stats = &mean_stats[0];
-            let pure_fn_nodes = pure_fns.values().filter(|(exec, _)| !exec).fold(0, |acc, (_, n)| acc + n);
+            let pure_fn_nodes = pure_fns
+                .values()
+                .filter(|(exec, _)| !exec)
+                .fold(0, |acc, (_, n)| acc + n);
             let pure_fn_nodes = pure_fn_nodes as f64 / solved as f64;
             let ann_overhead = mean_stats.ast_nodes / (mean_stats.spec_ast + pure_fn_nodes);
             write!(
                 f,
-                " \t Time {:.1}s \t SOL rules {:.2} \t Rust LOC {:.2} \t Code/Spec {:.2} \t Sln nodes {:.2} \t Ann nodes {:.2} \t Non-exec pure fn nodes {:.2}",
+                " \t Time {:.1}s \t SOL rules {:.2} \t Rust LOC {:.2} \t Code/Spec {:.2} {} Sln nodes {:.2} \t Ann nodes {:.2} \t Non-exec pure fn nodes {:.2}",
                 mean_stats.synth_time / 1000.,
                 mean_stats.rule_apps,
                 mean_stats.loc,
                 ann_overhead,
+                if is_eval { "| Overhead data:" } else { "\t" },
                 mean_stats.ast_nodes,
                 mean_stats.spec_ast,
                 pure_fn_nodes,
@@ -113,7 +117,10 @@ impl Display for Category {
             if !is_eval {
                 // let pure_fns: std::collections::HashMap<_, _> = pure_fns.iter().filter(|(_, (exec, _))| !exec).collect();
                 if !pure_fns.is_empty() {
-                    write!(f, " \t | \t Pure functions (\"name\": (executable, ast_nodes)): {pure_fns:?}")?;
+                    write!(
+                        f,
+                        " \t | \t Pure functions (\"name\": (executable, ast_nodes)): {pure_fns:?}"
+                    )?;
                 }
             }
         }
@@ -166,17 +173,30 @@ fn all_tests() {
         .ok()
         .and_then(|t| t.parse().ok())
         .unwrap_or(300_000);
-    let results = Category::run_tests_in_dir(PathBuf::from("./tests/synth/"), timeout);
+    let is_eval = std::env::var("RUSLIC_EVAL")
+        .ok()
+        .map(|s| s.parse::<bool>().unwrap())
+        .unwrap_or(false);
+
+    let results = if is_eval {
+        all_tests_eval(timeout)
+    } else {
+        Category::run_tests_in_dir(PathBuf::from("./tests/synth/"), timeout, 0)
+    };
     let max_ms = format_ms(results.max_ms());
-    print  !("### Measured timings (max {max_ms}) ###");
-    println!("{results}");
-    println!("#######################################");
+    let results_str = format!("### Measured timings (max {max_ms}) ###{results}\n#######################################\n");
+    print!("{results_str}");
+    std::fs::write("./tests/ci-results.txt", results_str).expect("Unable to results to file!");
     // Make sure this gets printed in the correct order in GitHub:
     std::thread::sleep(std::time::Duration::from_millis(1000));
     if results.errors().count() > 0 {
         let err: Vec<_> = results.errors().map(|err| &err.0).collect();
         panic!("Tests {:?} errored or exceeded timeout of {timeout}!", err);
     }
+}
+
+fn all_tests_eval(timeout: u64) -> Category {
+    Category::run_tests_in_dir(PathBuf::from("./tests/synth/paper"), timeout, 0)
 }
 
 fn format_ms(ms: u64) -> String {

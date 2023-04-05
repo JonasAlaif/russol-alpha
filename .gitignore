@@ -12,6 +12,6 @@
 /.vscode/
 /.metals/
 
-/ruslic/tmp/*
-!/ruslic/tmp/*.crate
+/ruslic/tests/top_100_crates/*
+!/ruslic/tests/top_100_crates/*.crate
 .DS_Store

@@ -1,6 +1,6 @@
 use rustc_data_structures::fx::FxHashMap;
-use rustc_middle::ty::TyCtxt;
 use rustc_hir::def_id::DefId;
+use rustc_middle::ty::TyCtxt;
 
 use crate::{
     hir_translator::HirTranslator,
@@ -40,7 +40,11 @@ pub fn intern(tcx: TyCtxt, timeout: u64) -> Option<FxHashMap<String, SynthesisRe
     }
 }
 
-pub fn solve<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: HirTranslator<'tcx>) -> Option<FxHashMap<String, SynthesisResult>> {
+pub fn solve<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    timeout: u64,
+    translator: HirTranslator<'tcx>,
+) -> Option<FxHashMap<String, SynthesisResult>> {
     let multifn = translator.impure_fns.len() > 1;
     let mut times = FxHashMap::default();
     let only_synth = translator.impure_fns.iter().any(|(s, _)| *s);
@@ -67,11 +71,20 @@ pub fn solve<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: HirTranslator<'t
     Some(times)
 }
 
-pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: HirTranslator<'tcx>, thread_count: usize) -> Option<FxHashMap<String, SynthesisResult>> {
+pub fn solve_multithreaded<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    timeout: u64,
+    translator: HirTranslator<'tcx>,
+    thread_count: usize,
+) -> Option<FxHashMap<String, SynthesisResult>> {
     let multifn = translator.impure_fns.len() > 1;
     let only_synth = translator.impure_fns.iter().any(|(s, _)| *s);
     let impure_fns = if only_synth {
-        translator.impure_fns.into_iter().filter(|(s, _)| *s).collect()
+        translator
+            .impure_fns
+            .into_iter()
+            .filter(|(s, _)| *s)
+            .collect()
     } else {
         translator.impure_fns
     };
@@ -113,7 +126,14 @@ pub fn solve_multithreaded<'tcx>(tcx: TyCtxt<'tcx>, timeout: u64, translator: Hi
     Some(times)
 }
 
-pub fn handle_result(result: SynthesisResult, times: &mut FxHashMap<String, SynthesisResult>, tcx: TyCtxt, def_id: DefId, name: String, multifn: bool) {
+pub fn handle_result(
+    result: SynthesisResult,
+    times: &mut FxHashMap<String, SynthesisResult>,
+    tcx: TyCtxt,
+    def_id: DefId,
+    name: String,
+    multifn: bool,
+) {
     if let Some(sln) = result.get_solved() {
         sln.print();
     }

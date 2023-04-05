@@ -1,6 +1,11 @@
 use ruslic::suslik::{MeanStats, Reason, Solved, SynthesisResult, Unsupported};
 use serde_derive::{Deserialize, Serialize};
-use std::{collections::HashMap, io::BufRead, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fmt::{Display, Formatter, Result},
+    io::BufRead,
+    path::PathBuf,
+};
 
 fn get(url: &str) -> reqwest::Result<reqwest::blocking::Response> {
     println!("Getting: {url}");
@@ -38,10 +43,14 @@ pub fn top_crates_all() {
 
 #[test]
 pub fn top_crates_cached() {
-    let paths = std::fs::read_dir("./tmp").unwrap();
+    let mut paths: Vec<_> = std::fs::read_dir("./tests/top_100_crates")
+        .unwrap()
+        .map(|r| r.unwrap())
+        .collect();
+    paths.sort_by_key(|dir| dir.path());
+
     let mut cached_crates = Vec::new();
     for path in paths {
-        let path = path.unwrap();
         if path.file_type().unwrap().is_dir() {
             continue;
         }
@@ -53,39 +62,44 @@ pub fn top_crates_cached() {
 
     let mut results = Vec::new();
     for krate in cached_crates {
-        let dirname = format!("./tmp/{krate}");
+        let dirname = format!("./tests/top_100_crates/{krate}");
         let res = run_on_crate(&dirname);
         results.push((krate, res));
     }
-    print_results(results);
+    let results = AllResults::new(results);
+    let results_str = results.to_string();
+    println!("\n\n{results_str}");
+    std::fs::write("./tests/crates-results.txt", results_str).expect("Unable to results to file!");
 }
 
-struct KrateResults;
-impl KrateResults {
-    pub fn timeout_count<'a>(res: impl Iterator<Item = &'a SynthesisResult>) -> usize {
+struct KrateResults<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> {
+    res: T,
+    is_eval: bool,
+}
+
+impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> KrateResults<'a, T> {
+    pub fn timeout_count(&self) -> usize {
+        let res = self.res.clone();
         res.filter(|res| matches!(res, SynthesisResult::Timeout))
             .count()
     }
-    pub fn unsolvable_count<'a>(res: impl Iterator<Item = &'a SynthesisResult>) -> usize {
+    pub fn unsolvable_count(&self) -> usize {
+        let res = self.res.clone();
         res.filter(|res| matches!(res, SynthesisResult::Unsolvable(_)))
             .count()
     }
-    pub fn unsupported<'a>(
-        res: impl Iterator<Item = &'a SynthesisResult>,
-    ) -> impl Iterator<Item = &'a Unsupported> {
+    pub fn unsupported(&self) -> impl Iterator<Item = &'a Unsupported> {
+        let res = self.res.clone();
         res.filter_map(|res| res.get_unsupported())
     }
-    pub fn solved<'a>(
-        res: impl Iterator<Item = &'a SynthesisResult>,
-    ) -> impl Iterator<Item = &'a Solved> {
+    pub fn solved(&self) -> impl Iterator<Item = &'a Solved> {
+        let res = self.res.clone();
         res.filter_map(|res| res.get_solved())
     }
 
-    pub fn reason_count<'a>(
-        res: impl Iterator<Item = &'a SynthesisResult>,
-    ) -> HashMap<Reason, (usize, usize)> {
+    pub fn reason_count(&self) -> HashMap<Reason, (usize, usize)> {
         let mut counts = HashMap::new();
-        for u in Self::unsupported(res) {
+        for u in self.unsupported() {
             let entry = counts.entry(u.reason).or_insert((0, 0));
             entry.0 += 1;
             if !u.in_main {
@@ -94,83 +108,78 @@ impl KrateResults {
         }
         counts
     }
+}
 
-    pub fn summarise<'a>(res: impl Iterator<Item = &'a SynthesisResult> + Clone) {
-        let timeout_count = Self::timeout_count(res.clone());
-        let unsolvable_count = Self::unsolvable_count(res.clone());
-        let (trivial, non_trivial): (Vec<_>, Vec<_>) =
-            Self::solved(res.clone()).partition(|r| r.is_trivial);
+impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> Display for KrateResults<'a, T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let timeout_count = self.timeout_count();
+        let unsolvable_count = self.unsolvable_count();
+        let (trivial, non_trivial): (Vec<_>, Vec<_>) = self.solved().partition(|r| r.is_trivial);
         let (trivial_count, non_trivial_count) = (trivial.len(), non_trivial.len());
         let solved_count = trivial_count + non_trivial_count;
-        let unsupported_count = Self::unsupported(res.clone()).count();
-        print!("Timeout {timeout_count}, Unsolvable {unsolvable_count}, Unsupported {unsupported_count}, Solved {solved_count} (trivial {trivial_count}, non-trivial {non_trivial_count}) | ");
+        let unsupported_count = self.unsupported().count();
+        write!(f, "Timeout {timeout_count}, Unsolvable {unsolvable_count}, Unsupported {unsupported_count}, Solved {solved_count} (trivial {trivial_count}, non-trivial {non_trivial_count})")?;
 
         if solved_count > 0 {
-            // Trivial:
-            print!("Trivial: ");
-            if trivial_count > 0 {
-                let (_, mstats) = MeanStats::calculate(trivial.iter().copied());
-                let first = mstats.first().unwrap();
-                print!(
-                    "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
-                    first.synth_time / 1000.,
-                    first.loc,
-                    first.rule_apps,
-                    first.ast_nodes,
-                    first.ast_nodes_unsimp,
-                );
-                for mstat in mstats.into_iter().skip(1) {
-                    print!(
-                        "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
+            fn print_mstats(
+                f: &mut Formatter<'_>,
+                mstats: Vec<MeanStats>,
+                is_eval: bool,
+            ) -> Result {
+                let mut print_stat = move |mstat: &MeanStats, is_first: bool| {
+                    let sep = if is_first { "" } else { ", " };
+                    write!(
+                        f,
+                        "{sep}Time {:.2}s [{:.2} LOC/{:.2} Rules",
                         mstat.synth_time / 1000.,
                         mstat.loc,
                         mstat.rule_apps,
-                        mstat.ast_nodes,
-                        mstat.ast_nodes_unsimp,
-                    );
+                    )?;
+                    if !is_eval {
+                        write!(
+                            f,
+                            "/{:.2} sln nodes/{:.2} sln unsimp nodes",
+                            mstat.ast_nodes, mstat.ast_nodes_unsimp
+                        )?;
+                    }
+                    write!(f, "]")
+                };
+                let first = mstats.first().unwrap();
+                print_stat(first, true)?;
+                for mstat in mstats.into_iter().skip(1) {
+                    print_stat(&mstat, false)?;
                 }
-            } else {
-                print!("0");
+                Ok(())
             }
-            print!(" / Non-trivial: ");
+
+            // Trivial:
+            write!(f, " | Trivial: ")?;
+            if trivial_count > 0 {
+                let (_, mstats) = MeanStats::calculate(trivial.iter().copied());
+                print_mstats(f, mstats, self.is_eval)?;
+            } else {
+                write!(f, "0")?;
+            }
+            write!(f, " / Non-trivial: ")?;
             // Non-trivial:
             if non_trivial_count > 0 {
                 let (_, mstats) = MeanStats::calculate(non_trivial.iter().copied());
-                let first = mstats.first().unwrap();
-                print!(
-                    "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
-                    first.synth_time / 1000.,
-                    first.loc,
-                    first.rule_apps,
-                    first.ast_nodes,
-                    first.ast_nodes_unsimp,
-                );
-                for mstat in mstats.into_iter().skip(1) {
-                    print!(
-                        "Time {:.2}s [{:.2} LOC/{:.2} Rules/{:.2} sln nodes/{:.2} sln unsimp nodes]",
-                        mstat.synth_time / 1000.,
-                        mstat.loc,
-                        mstat.rule_apps,
-                        mstat.ast_nodes,
-                        mstat.ast_nodes_unsimp,
-                    );
-                }
+                print_mstats(f, mstats, self.is_eval)?;
             } else {
-                print!("0");
+                write!(f, "0")?;
             }
-            print!(" | Unsupported due to: ");
         }
-
-        for (r, (c, _non_main)) in Self::reason_count(res) {
-            print!("{r:?} {c}, ");
+        write!(f, " | Unsupported due to: ")?;
+        for (r, (c, _non_main)) in self.reason_count() {
+            write!(f, "{r:?} {c}, ")?;
         }
-        println!();
+        writeln!(f)
     }
 }
 
 pub fn top_crates_range(range: std::ops::Range<usize>) {
     let mut results = Vec::new();
-    std::fs::create_dir_all("tmp").unwrap();
+    std::fs::create_dir_all("./tests/top_100_crates").unwrap();
     let top_crates = top_crates_by_download_count(range.end);
     for krate in top_crates.into_iter().skip(range.start) {
         let version = krate.version.unwrap_or(krate.newest_version);
@@ -178,23 +187,44 @@ pub fn top_crates_range(range: std::ops::Range<usize>) {
         let res = run_on_crate(&dirname);
         results.push((krate.name, res));
     }
-    print_results(results);
-    // std::fs::remove_dir_all("tmp").unwrap();
+    let results = AllResults::new(results);
+    let results_str = results.to_string();
+    println!("\n\n{results_str}");
+    std::fs::write("./tests/crates-results.txt", results_str).expect("Unable to results to file!");
+    // std::fs::remove_dir_all("./tests/top_100_crates").unwrap();
 }
 
-pub fn print_results(results: Vec<(String, Vec<SynthesisResult>)>) {
-    println!("\n");
-    for (krate, res) in &results {
-        print!("  {krate} | ");
-        KrateResults::summarise(res.iter());
+struct AllResults(Vec<(String, Vec<SynthesisResult>)>, bool);
+impl AllResults {
+    pub fn new(results: Vec<(String, Vec<SynthesisResult>)>) -> Self {
+        let is_eval = std::env::var("RUSLIC_EVAL")
+            .ok()
+            .map(|s| s.parse::<bool>().unwrap())
+            .unwrap_or(false);
+        Self(results, is_eval)
     }
-    print!("ALL {} | ", results.len());
-    KrateResults::summarise(results.iter().flat_map(|(_, res)| res.iter()));
-    println!();
+}
+impl Display for AllResults {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        if !self.1 {
+            for (krate, res) in &self.0 {
+                let res = KrateResults {
+                    res: res.iter(),
+                    is_eval: self.1,
+                };
+                write!(f, "  {krate} | {res}")?;
+            }
+        }
+        let all = KrateResults {
+            res: self.0.iter().flat_map(|(_, res)| res.iter()),
+            is_eval: self.1,
+        };
+        write!(f, "ALL {} | {all}", self.0.len())
+    }
 }
 
 fn download_crate(name: &str, version: &str) -> String {
-    let dirname = format!("./tmp/{name}-{version}");
+    let dirname = format!("./tests/top_100_crates/{name}-{version}");
     let filename = format!("{dirname}.crate");
     if !std::path::PathBuf::from(&filename).exists() {
         let dl = format!(
@@ -210,7 +240,7 @@ fn download_crate(name: &str, version: &str) -> String {
 
 fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
     let status = std::process::Command::new("tar")
-        .args(["-xf", &format!("{dirname}.crate"), "-C", "./tmp/"])
+        .args(["-xf", &format!("{dirname}.crate"), "-C", "./tests/top_100_crates/"])
         .status()
         .unwrap();
     assert!(status.success());
