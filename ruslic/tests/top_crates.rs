@@ -148,7 +148,7 @@ impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> Display for KrateResul
                 mstats: Vec<MeanStats>,
                 is_eval: bool,
             ) -> Result {
-                let mut print_stat = move |mstat: &MeanStats, is_first: bool| {
+                let mut print_stat = move |mstat: &MeanStats, is_first: bool| -> Result {
                     let sep = if is_first { "" } else { ", " };
                     write!(
                         f,
