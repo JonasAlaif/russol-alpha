@@ -78,28 +78,42 @@ struct KrateResults<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> {
 }
 
 impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> KrateResults<'a, T> {
-    pub fn timeout_count(&self) -> usize {
-        let res = self.res.clone();
-        res.filter(|res| matches!(res, SynthesisResult::Timeout))
-            .count()
+    fn count(i: impl Iterator<Item = &'a SynthesisResult>) -> (usize, usize) {
+        let (mut trivial, mut non) = (0, 0);
+        for res in i {
+            if res.is_trivial {
+                trivial += 1;
+            } else {
+                non += 1;
+            }
+        }
+        (trivial, non)
     }
-    pub fn unsolvable_count(&self) -> usize {
+    pub fn timeout_count(&self) -> (usize, usize) {
         let res = self.res.clone();
-        res.filter(|res| matches!(res, SynthesisResult::Unsolvable(_)))
-            .count()
+        Self::count(res.filter(|res| res.is_timeout()))
     }
-    pub fn unsupported(&self) -> impl Iterator<Item = &'a Unsupported> {
+    pub fn unsolvable_count(&self) -> (usize, usize) {
         let res = self.res.clone();
-        res.filter_map(|res| res.get_unsupported())
+        Self::count(res.filter(|res| res.get_unsolvable().is_some()))
     }
-    pub fn solved(&self) -> impl Iterator<Item = &'a Solved> {
+    pub fn unsupported_count(&self) -> (usize, usize) {
         let res = self.res.clone();
-        res.filter_map(|res| res.get_solved())
+        Self::count(res.filter(|res| res.get_unsupported().is_some()))
+    }
+
+    pub fn unsupported(&self) -> impl Iterator<Item = (bool, &'a Unsupported)> {
+        let res = self.res.clone();
+        res.filter_map(|res| res.get_unsupported().map(|u| (res.is_trivial, u)))
+    }
+    pub fn solved(&self) -> impl Iterator<Item = (bool, &'a Solved)> {
+        let res = self.res.clone();
+        res.filter_map(|res| res.get_solved().map(|s| (res.is_trivial, s)))
     }
 
     pub fn reason_count(&self) -> HashMap<Reason, (usize, usize)> {
         let mut counts = HashMap::new();
-        for u in self.unsupported() {
+        for (_, u) in self.unsupported() {
             let entry = counts.entry(u.reason).or_insert((0, 0));
             entry.0 += 1;
             if !u.in_main {
@@ -112,15 +126,23 @@ impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> KrateResults<'a, T> {
 
 impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> Display for KrateResults<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let timeout_count = self.timeout_count();
-        let unsolvable_count = self.unsolvable_count();
-        let (trivial, non_trivial): (Vec<_>, Vec<_>) = self.solved().partition(|r| r.is_trivial);
-        let (trivial_count, non_trivial_count) = (trivial.len(), non_trivial.len());
-        let solved_count = trivial_count + non_trivial_count;
-        let unsupported_count = self.unsupported().count();
-        write!(f, "Timeout {timeout_count}, Unsolvable {unsolvable_count}, Unsupported {unsupported_count}, Solved {solved_count} (trivial {trivial_count}, non-trivial {non_trivial_count})")?;
+        let (to_t, to_n) = self.timeout_count();
+        let to_sum = to_t + to_n;
+        let (unsv_t, unsv_n) = self.unsolvable_count();
+        let unsv_sum = unsv_t + unsv_n;
+        let (failed_t, failed_n) = (to_t + unsv_t, to_n + unsv_n);
+        let failed_sum = failed_t + failed_n;
 
-        if solved_count > 0 {
+        let (slns_t, slns_n): (Vec<_>, Vec<_>) = self.solved().partition(|r| r.0);
+        let (slvd_t, slvd_n) = (slns_t.len(), slns_n.len());
+        let slvd_sum = slvd_t + slvd_n;
+
+        let (unsup_t, unsup_n) = self.unsupported_count();
+        let unsup_sum = unsup_t + unsup_n;
+
+        write!(f, "Unsupported {unsup_sum} (triv {unsup_t}, non-triv {unsup_n}) Failed {failed_sum} (triv {failed_t}, non-triv {failed_n}) Solved {slvd_sum} (triv {slvd_t}, non-triv {slvd_n})")?;
+
+        if slvd_sum > 0 {
             fn print_mstats(
                 f: &mut Formatter<'_>,
                 mstats: Vec<MeanStats>,
@@ -130,7 +152,7 @@ impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> Display for KrateResul
                     let sep = if is_first { "" } else { ", " };
                     write!(
                         f,
-                        "{sep}Time {:.2}s [{:.2} LOC/{:.2} Rules",
+                        "{sep}Time {:.2}s LOC {:.2} Rules {:.2}",
                         mstat.synth_time / 1000.,
                         mstat.loc,
                         mstat.rule_apps,
@@ -138,11 +160,11 @@ impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> Display for KrateResul
                     if !is_eval {
                         write!(
                             f,
-                            "/{:.2} sln nodes/{:.2} sln unsimp nodes",
+                            " sln nodes {:.2} sln unsimp nodes {:.2}",
                             mstat.ast_nodes, mstat.ast_nodes_unsimp
                         )?;
                     }
-                    write!(f, "]")
+                    Ok(())
                 };
                 let first = mstats.first().unwrap();
                 print_stat(first, true)?;
@@ -154,21 +176,22 @@ impl<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> Display for KrateResul
 
             // Trivial:
             write!(f, " | Trivial: ")?;
-            if trivial_count > 0 {
-                let (_, mstats) = MeanStats::calculate(trivial.iter().copied());
+            if slvd_t > 0 {
+                let (_, mstats) = MeanStats::calculate(slns_t.iter().map(|(_, s)| s).copied());
                 print_mstats(f, mstats, self.is_eval)?;
             } else {
                 write!(f, "0")?;
             }
             write!(f, " / Non-trivial: ")?;
             // Non-trivial:
-            if non_trivial_count > 0 {
-                let (_, mstats) = MeanStats::calculate(non_trivial.iter().copied());
+            if slvd_n > 0 {
+                let (_, mstats) = MeanStats::calculate(slns_n.iter().map(|(_, s)| s).copied());
                 print_mstats(f, mstats, self.is_eval)?;
             } else {
                 write!(f, "0")?;
             }
         }
+        write!(f, " | Falied due to: Timeout {to_sum} (triv {to_t}, non-triv {to_n}), Unsolvable {unsv_sum} (triv {unsv_t}, non-triv {unsv_n})")?;
         write!(f, " | Unsupported due to: ")?;
         for (r, (c, _non_main)) in self.reason_count() {
             write!(f, "{r:?} {c}, ")?;
@@ -240,7 +263,12 @@ fn download_crate(name: &str, version: &str) -> String {
 
 fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
     let status = std::process::Command::new("tar")
-        .args(["-xf", &format!("{dirname}.crate"), "-C", "./tests/top_100_crates/"])
+        .args([
+            "-xf",
+            &format!("{dirname}.crate"),
+            "-C",
+            "./tests/top_100_crates/",
+        ])
         .status()
         .unwrap();
     assert!(status.success());

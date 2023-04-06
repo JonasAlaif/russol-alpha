@@ -89,4 +89,9 @@ impl<'tcx> RuslikFnSig<'tcx> {
             ast_nodes,
         }
     }
+
+    pub fn is_trivial(&self) -> bool {
+        let return_trivial = self.ret.is_unit() || self.ret.is_primitive();
+        self.pure_post.is_true() && return_trivial
+    }
 }

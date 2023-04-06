@@ -142,7 +142,7 @@ pub fn handle_result(
     let subst_result = std::env::var("RUSLIC_SUBST_RESULT")
         .map(|v| v.parse::<bool>().unwrap())
         .unwrap_or(false);
-    if let SynthesisResult::Solved(sln) = &result && subst_result {
+    if let Some(sln) = result.get_solved() && subst_result {
         let sln_lines = sln.slns[0].loc;
         let sln = sln.slns[0].code.lines().skip(1).take(sln_lines).fold("\n".to_string(), |acc, line| acc + line + "\n");
         replace_with_sln(tcx, def_id, sln, multifn);

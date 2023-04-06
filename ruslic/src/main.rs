@@ -2,7 +2,7 @@
 extern crate rustc_driver;
 extern crate rustc_errors;
 
-use ruslic::suslik::SynthesisResult;
+use ruslic::suslik::{SynthesisResult, SynthesisResultKind};
 use rustc_errors::ErrorGuaranteed;
 
 fn main() -> Result<(), ErrorGuaranteed> {
@@ -59,11 +59,11 @@ fn summarise(res: Vec<&SynthesisResult>) {
     }
     let (mut unsupported, mut unsolvable, mut timeout, mut solved) = (0, 0, 0, Vec::new());
     for res in res.iter() {
-        match res {
-            SynthesisResult::Unsupported(_) => unsupported += 1,
-            SynthesisResult::Unsolvable(_) => unsolvable += 1,
-            SynthesisResult::Timeout => timeout += 1,
-            SynthesisResult::Solved(s) => {
+        match &res.kind {
+            SynthesisResultKind::Unsupported(_) => unsupported += 1,
+            SynthesisResultKind::Unsolvable(_) => unsolvable += 1,
+            SynthesisResultKind::Timeout => timeout += 1,
+            SynthesisResultKind::Solved(s) => {
                 for (idx, sln) in s.slns.iter().enumerate() {
                     if solved.len() <= idx {
                         solved.push((0, 0, 0));

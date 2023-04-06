@@ -232,7 +232,12 @@ pub enum Reason {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-pub enum SynthesisResult {
+pub struct SynthesisResult {
+    pub is_trivial: bool,
+    pub kind: SynthesisResultKind,
+}
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub enum SynthesisResultKind {
     Unsupported(Unsupported),
     Unsolvable(u64),
     Timeout,
@@ -240,44 +245,46 @@ pub enum SynthesisResult {
 }
 impl SynthesisResult {
     pub fn get_solved(&self) -> Option<&Solved> {
-        if let SynthesisResult::Solved(sln) = self {
+        if let SynthesisResultKind::Solved(sln) = &self.kind {
             Some(sln)
         } else {
             None
         }
     }
     pub fn get_unsupported(&self) -> Option<&Unsupported> {
-        if let SynthesisResult::Unsupported(u) = self {
+        if let SynthesisResultKind::Unsupported(u) = &self.kind {
             Some(u)
         } else {
             None
         }
     }
+    pub fn get_unsolvable(&self) -> Option<u64> {
+        if let SynthesisResultKind::Unsolvable(u) = &self.kind {
+            Some(*u)
+        } else {
+            None
+        }
+    }
+    pub fn is_timeout(&self) -> bool {
+        matches!(self.kind, SynthesisResultKind::Timeout)
+    }
 }
 pub type UsedPureFns = FxHashMap<String, (bool, usize)>;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct Solved {
-    pub is_trivial: bool,
     pub exec_time: u64,
     pub synth_ast: usize,
     pub pure_fn_ast: UsedPureFns,
     pub slns: Vec<Solution>,
 }
 impl Solved {
-    fn new(
-        is_trivial: bool,
-        exec_time: u64,
-        synth_ast: usize,
-        pure_fn_ast: UsedPureFns,
-        sln: String,
-    ) -> Self {
+    fn new(exec_time: u64, synth_ast: usize, pure_fn_ast: UsedPureFns, sln: String) -> Self {
         let idx = &mut 0;
         let slns: Vec<_> = sln
             .split("-----------------------------------------------------\n")
             .flat_map(|sln| Solution::new(sln, idx))
             .collect();
         Self {
-            is_trivial,
             exec_time,
             synth_ast,
             pure_fn_ast,
@@ -404,9 +411,13 @@ impl SuslikProgram {
     ) -> Option<SynthesisResult> {
         let suslik_dir = Self::sbt_build_suslik();
         let params = sig.params.clone();
+        let is_trivial = sig.is_trivial();
         match Self::from_fn_sig(tcx, pure_fns, extern_fns, sig) {
             Ok(sp) => sp.send_to_suslik(suslik_dir, &params, timeout),
-            Err(err) => Some(SynthesisResult::Unsupported(err)),
+            Err(err) => Some(SynthesisResult {
+                is_trivial,
+                kind: SynthesisResultKind::Unsupported(err),
+            }),
         }
     }
     pub fn solve_in_thread<'tcx>(
@@ -420,11 +431,15 @@ impl SuslikProgram {
     ) {
         let suslik_dir = Self::sbt_build_suslik();
         let params = sig.params.clone();
+        let is_trivial = sig.is_trivial();
         let sus_prog = Self::from_fn_sig(tcx, pure_fns, extern_fns, sig);
         std::thread::spawn(move || {
             let result = match sus_prog {
                 Ok(sp) => sp.send_to_suslik(suslik_dir, &params, timeout),
-                Err(err) => Some(SynthesisResult::Unsupported(err)),
+                Err(err) => Some(SynthesisResult {
+                    is_trivial,
+                    kind: SynthesisResultKind::Unsupported(err),
+                }),
             };
             tx.send((id, result)).unwrap();
         });
@@ -546,22 +561,30 @@ impl SuslikProgram {
             None
         } else {
             Some(if !intime {
-                SynthesisResult::Timeout
+                SynthesisResult {
+                    is_trivial: self.synth_fn.is_trivial,
+                    kind: SynthesisResultKind::Timeout,
+                }
             } else if unsolvable {
                 std::fs::remove_dir_all(suslik_dir.join(&tmpdir)).unwrap();
-                SynthesisResult::Unsolvable(time.as_millis() as u64)
+                SynthesisResult {
+                    is_trivial: self.synth_fn.is_trivial,
+                    kind: SynthesisResultKind::Unsolvable(time.as_millis() as u64),
+                }
             } else {
                 std::fs::remove_dir_all(suslik_dir.join(&tmpdir)).unwrap();
                 let mut sln = String::new();
                 use std::io::Read;
                 stdout.read_to_string(&mut sln).unwrap();
-                SynthesisResult::Solved(Solved::new(
-                    self.synth_fn.is_trivial,
-                    time.as_millis() as u64,
-                    self.synth_ast,
-                    self.pure_fn_ast.clone(),
-                    sln,
-                ))
+                SynthesisResult {
+                    is_trivial: self.synth_fn.is_trivial,
+                    kind: SynthesisResultKind::Solved(Solved::new(
+                        time.as_millis() as u64,
+                        self.synth_ast,
+                        self.pure_fn_ast.clone(),
+                        sln,
+                    )),
+                }
             })
         }
     }
@@ -747,9 +770,8 @@ impl Signature {
                 fn_name = prefix + trait_name.split('<').next().unwrap() + "::" + &fn_name;
             }
         }
-        let return_trivial = sig.ret.is_unit() || sig.ret.is_primitive();
         let sig = Self {
-            is_trivial: sig.pure_post.is_true() && return_trivial,
+            is_trivial: sig.is_trivial(),
             region_rels: outlives_relations(tcx, &sig),
             pre,
             post,
