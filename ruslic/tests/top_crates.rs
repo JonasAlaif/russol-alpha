@@ -41,8 +41,7 @@ pub fn top_crates_all() {
     top_crates_range(0..100)
 }
 
-#[test]
-pub fn top_crates_cached() {
+fn get_cached_crates() -> Vec<String> {
     let mut paths: Vec<_> = std::fs::read_dir("./tests/top_100_crates")
         .unwrap()
         .map(|r| r.unwrap())
@@ -59,17 +58,36 @@ pub fn top_crates_cached() {
             cached_crates.push(file_name.to_string());
         }
     }
+    cached_crates
+}
 
+#[test]
+pub fn top_crates_cached() {
     let mut results = Vec::new();
-    for krate in cached_crates {
+    for krate in get_cached_crates() {
         let dirname = format!("./tests/top_100_crates/{krate}");
-        let res = run_on_crate(&dirname);
+        let res = run_on_crate(&dirname, true);
         results.push((krate, res));
     }
     let results = AllResults::new(results);
     let results_str = results.to_string();
     println!("\n\n{results_str}");
     std::fs::write("./tests/crates-results.txt", results_str).expect("Unable to results to file!");
+}
+
+#[test]
+pub fn prefetch_cached() {
+    for krate in get_cached_crates() {
+        let dirname = format!("./tests/top_100_crates/{krate}");
+        extract_crate(&dirname);
+        let status = std::process::Command::new("cargo")
+            .arg("check")
+            .current_dir(&dirname)
+            .status()
+            .unwrap();
+        assert!(status.success());
+        std::fs::remove_dir_all(&dirname).unwrap();
+    }
 }
 
 struct KrateResults<'a, T: Iterator<Item = &'a SynthesisResult> + Clone> {
@@ -207,7 +225,7 @@ pub fn top_crates_range(range: std::ops::Range<usize>) {
     for krate in top_crates.into_iter().skip(range.start) {
         let version = krate.version.unwrap_or(krate.newest_version);
         let dirname = download_crate(&krate.name, &version);
-        let res = run_on_crate(&dirname);
+        let res = run_on_crate(&dirname, false);
         results.push((krate.name, res));
     }
     let results = AllResults::new(results);
@@ -261,7 +279,7 @@ fn download_crate(name: &str, version: &str) -> String {
     dirname
 }
 
-fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
+fn extract_crate(dirname: &str) {
     let status = std::process::Command::new("tar")
         .args([
             "-xf",
@@ -279,6 +297,17 @@ fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
         .unwrap();
     use std::io::Write;
     writeln!(file, "\n[workspace]").unwrap();
+}
+fn cargo_cmd(offline: bool) -> std::process::Command {
+    let mut cc = std::process::Command::new("cargo");
+    cc.arg("check");
+    if offline {
+        cc.arg("--offline");
+    }
+    cc
+}
+fn run_on_crate(dirname: &str, offline: bool) -> Vec<SynthesisResult> {
+    extract_crate(dirname);
     let cwd = std::env::current_dir().unwrap();
     let dir = if cfg!(debug_assertions) {
         "debug"
@@ -289,8 +318,7 @@ fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
     let suslik = cwd.join(["..", "suslik"].iter().collect::<PathBuf>());
     let timeout = std::env::var("RUSLIC_TIMEOUT").unwrap_or("300000".to_string());
     // let mt = std::env::var("RUSLIC_THREAD_COUNT").unwrap_or("12".to_string());
-    let mut child = std::process::Command::new("cargo")
-        .arg("check")
+    let mut child = cargo_cmd(offline)
         .env("RUSTC_WRAPPER", ruslic)
         .env("SUSLIK_DIR", suslik)
         .env("RUSLIC_USE_FULL_NAMES", "true")
@@ -324,8 +352,7 @@ fn run_on_crate(dirname: &str) -> Vec<SynthesisResult> {
     assert!(status.success());
 
     // Check that everything compiles
-    let status = std::process::Command::new("cargo")
-        .arg("check")
+    let status = cargo_cmd(offline)
         .env("RUSTFLAGS", "--cap-lints allow")
         .current_dir(&dirname)
         .status()
