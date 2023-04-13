@@ -1,5 +1,5 @@
 #![no_std]
-#![feature(box_patterns, box_syntax)]
+#![feature(box_patterns)]
 #![feature(let_chains)]
 #![feature(proc_macro_span, proc_macro_diagnostic, proc_macro_span_shrink)]
 

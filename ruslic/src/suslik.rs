@@ -893,13 +893,13 @@ impl Expr {
                 Phi(vec![
                     Expr::BinOp(
                         RustBinOp::Ge.into(),
-                        box Expr::Var(value.clone()),
-                        box Expr::UnOp(UnOp::Neg, box max_val.into()),
+                        Box::new(Expr::Var(value.clone())),
+                        Box::new(Expr::UnOp(UnOp::Neg, Box::new(max_val.into()))),
                     ),
                     Expr::BinOp(
                         RustBinOp::Le.into(),
-                        box Expr::Var(value),
-                        box max_val.into(),
+                        Box::new(Expr::Var(value)),
+                        Box::new(max_val.into()),
                     ),
                 ])
             }
@@ -925,10 +925,10 @@ impl Expr {
                 Phi(vec![
                     Expr::BinOp(
                         RustBinOp::Ge.into(),
-                        box Expr::Var(value.clone()),
-                        box 0.into(),
+                        Box::new(Expr::Var(value.clone())),
+                        Box::new(0.into()),
                     ),
-                    Expr::BinOp(RustBinOp::Le.into(), box Expr::Var(value), box max_val),
+                    Expr::BinOp(RustBinOp::Le.into(), Box::new(Expr::Var(value)), Box::new(max_val)),
                 ])
             }
             TyKind::Float(_) => todo!(),
@@ -937,7 +937,7 @@ impl Expr {
         }
     }
     pub fn _eq(self, other: Self) -> Self {
-        Self::BinOp(RustBinOp::Eq.into(), box self, box other)
+        Self::BinOp(RustBinOp::Eq.into(), Box::new(self), Box::new(other))
     }
     pub fn is_true(&self) -> bool {
         matches!(self, Expr::Lit(Lit::Bool(true)))
@@ -962,7 +962,7 @@ impl std::ops::BitAnd<Expr> for Expr {
             (Expr::Lit(Lit::Bool(true)), _) | (_, Expr::Lit(Lit::Bool(false))) => rhs,
             (_, Expr::Lit(Lit::Bool(true))) | (Expr::Lit(Lit::Bool(false)), _) => self,
             // Constructor:
-            _ => Expr::BinOp(RustBinOp::And.into(), box self, box rhs),
+            _ => Expr::BinOp(RustBinOp::And.into(), Box::new(self), Box::new(rhs)),
         }
     }
 }

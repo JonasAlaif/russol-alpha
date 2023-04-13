@@ -3,7 +3,6 @@
 #![feature(box_patterns)]
 #![feature(if_let_guard)]
 #![feature(let_chains)]
-#![feature(box_syntax)]
 #![feature(assert_matches)]
 #![allow(clippy::needless_lifetimes)]
 

@@ -522,8 +522,8 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                 assert!(futs.is_empty());
                 Expr::BinOp(
                     op.into(),
-                    box self.translate_expr(l, Vec::new(), None),
-                    box self.translate_expr(r, Vec::new(), None),
+                    Box::new(self.translate_expr(l, Vec::new(), None)),
+                    Box::new(self.translate_expr(r, Vec::new(), None)),
                 )
             }
             crate::ruslik_pure::ExprKind::UnOp(op, e) => {
@@ -532,7 +532,7 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                 match op {
                     // We implicitly take snapshots anyway so no need to do anything
                     UnOpKind::Snap => self.translate_expr(e, futs, None), // otherwise: (e, Some((PredParameter::default(), true.into())), in_post)
-                    UnOpKind::UnOp(op) => Expr::UnOp(*op, box self.translate_expr(e, futs, None)),
+                    UnOpKind::UnOp(op) => Expr::UnOp(*op, Box::new(self.translate_expr(e, futs, None))),
                 }
             }
             crate::ruslik_pure::ExprKind::Constructor(_, _, _) => todo!("{}", expr),
@@ -660,7 +660,7 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                 let f = self.translate_expr(f, futs, param);
                 // Done
                 self.under_cond.pop();
-                Expr::IfElse(box g, box t, box f)
+                Expr::IfElse(Box::new(g), Box::new(t), Box::new(f))
             }
             crate::ruslik_pure::ExprKind::Call(CallInfo::Pure(id, substs), fn_args) => {
                 assert!(
@@ -822,9 +822,9 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                         // Wrap call post under conditionals (otherwise we might have an irrelevant fact in an unrelated enum variant)
                         for &(t, ref cond) in &self.under_cond {
                             call_post = if t {
-                                Expr::IfElse(box cond.clone(), box call_post, box true.into())
+                                Expr::IfElse(Box::new(cond.clone()), Box::new(call_post), Box::new(true.into()))
                             } else {
-                                Expr::IfElse(box cond.clone(), box true.into(), box call_post)
+                                Expr::IfElse(Box::new(cond.clone()), Box::new(true.into()), Box::new(call_post))
                             }
                         }
                     }
@@ -922,7 +922,7 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
                 assert!(param.is_none());
                 let set = self.translate_expr(&args[0], Vec::new(), None);
                 let elem = self.translate_expr(&args[1], Vec::new(), None);
-                Expr::BinOp(BinOp::SetContains, box elem, box set)
+                Expr::BinOp(BinOp::SetContains, Box::new(elem), Box::new(set))
             }
         }
     }
@@ -935,8 +935,8 @@ impl<'tcx, 'a, 'b> ExprTranslator<'tcx, 'a, 'b> {
             |acc, blocker| {
                 acc & Expr::BinOp(
                     RustBinOp::Ge.into(),
-                    box Expr::Var(format!("&{}", &bi.unwrap().lft[1..])),
-                    box Expr::Var(format!("&{}", &blocker[1..])),
+                    Box::new(Expr::Var(format!("&{}", &bi.unwrap().lft[1..]))),
+                    Box::new(Expr::Var(format!("&{}", &blocker[1..]))),
                 )
             },
         )

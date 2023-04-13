@@ -70,7 +70,7 @@ impl<'a, 'tcx> ThirTerm<'a, 'tcx> {
             }
             ExprKind::Binary { op, lhs, rhs } => {
                 self.ast_nodes += 1;
-                Expr::BinOp(op.to_hir_binop(), box self.expr_term(lhs), box self.expr_term(rhs)).with_ty(ty)
+                Expr::BinOp(op.to_hir_binop(), Box::new(self.expr_term(lhs)), Box::new(self.expr_term(rhs))).with_ty(ty)
             }
             ExprKind::LogicalOp { op, lhs, rhs } => {
                 self.ast_nodes += 1;
@@ -78,11 +78,11 @@ impl<'a, 'tcx> ThirTerm<'a, 'tcx> {
                     thir::LogicalOp::And => rustc_hir::BinOpKind::And,
                     thir::LogicalOp::Or => rustc_hir::BinOpKind::Or,
                 };
-                Expr::BinOp(op, box self.expr_term(lhs), box self.expr_term(rhs)).with_ty(ty)
+                Expr::BinOp(op, Box::new(self.expr_term(lhs)), Box::new(self.expr_term(rhs))).with_ty(ty)
             }
             ExprKind::Unary { op, arg } => {
                 self.ast_nodes += 1;
-                Expr::UnOp(UnOpKind::UnOp(op), box self.expr_term(arg)).with_ty(ty)
+                Expr::UnOp(UnOpKind::UnOp(op), Box::new(self.expr_term(arg))).with_ty(ty)
             }
             // Result or local var:
             ExprKind::VarRef { id } => {
@@ -117,7 +117,7 @@ impl<'a, 'tcx> ThirTerm<'a, 'tcx> {
                         assert!(arg_exprs.len() == 1); assert!(ty.to_string().starts_with("russol_contracts::Snapshot"));
                         let arg = arg_exprs.pop().unwrap().deref(false);
                         let ty = arg.ty();
-                        return Expr::UnOp(UnOpKind::Snap, box arg).with_ty(ty);
+                        return Expr::UnOp(UnOpKind::Snap, Box::new(arg)).with_ty(ty);
                     }
                     Some(RuslikStub::SetNew) => {
                         assert!(args.len() == 1); assert!(ty.to_string().starts_with("russol_contracts::Set"));
@@ -147,8 +147,8 @@ impl<'a, 'tcx> ThirTerm<'a, 'tcx> {
                         assert_eq!(lhs.ty(), rhs.ty());
                         return Expr::BinOp(
                             s.to_binop(),
-                            box if s.expect_deref() { lhs.deref(false) } else { lhs },
-                            box if s.expect_deref() { rhs.deref(false) } else { rhs }
+                            Box::new(if s.expect_deref() { lhs.deref(false) } else { lhs }),
+                            Box::new(if s.expect_deref() { rhs.deref(false) } else { rhs }),
                         ).with_ty(ty)
                     }
                 };
@@ -184,7 +184,7 @@ impl<'a, 'tcx> ThirTerm<'a, 'tcx> {
                 let scrutinee = self.expr_term(scrutinee);
                 arms.iter().map(|arm| self.arm_term(*arm, scrutinee.clone())).rev().reduce(|acc, arm| {
                     let (acc, arm) = (acc, arm);
-                    (acc.0, Expr::IfElse(box arm.0, box arm.1, box acc.1).with_ty(ty))
+                    (acc.0, Expr::IfElse(Box::new(arm.0), Box::new(arm.1), Box::new(acc.1)).with_ty(ty))
                 }).unwrap().1
             }
             ExprKind::Let { expr, ref pat } => {
@@ -201,7 +201,7 @@ impl<'a, 'tcx> ThirTerm<'a, 'tcx> {
                 } else {
                     panic!("If expressions must have else!")
                 };
-                Expr::IfElse(box cond, box then, box els).with_ty(ty)
+                Expr::IfElse(Box::new(cond), Box::new(then), Box::new(els)).with_ty(ty)
             }
             ExprKind::Field { lhs, name, variant_index } => {
                 self.ast_nodes += 1;

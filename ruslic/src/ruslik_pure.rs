@@ -118,11 +118,11 @@ impl<'tcx> PureExpression<'tcx> {
     }
     pub fn _eq(self, other: Self, tcx: TyCtxt<'tcx>) -> Self {
         assert!(self.ty == other.ty);
-        ExprKind::BinOp(BinOp::Eq, box self, box other).with_ty(tcx.types.bool)
+        ExprKind::BinOp(BinOp::Eq, Box::new(self), Box::new(other)).with_ty(tcx.types.bool)
     }
     pub fn _ge(self, other: Self, tcx: TyCtxt<'tcx>) -> Self {
         assert!(self.ty == other.ty);
-        ExprKind::BinOp(BinOp::Ge, box self, box other).with_ty(tcx.types.bool)
+        ExprKind::BinOp(BinOp::Ge, Box::new(self), Box::new(other)).with_ty(tcx.types.bool)
     }
     pub fn borrow(self, ty: Ty<'tcx>) -> Self {
         let (f, v) = OLD;
@@ -145,7 +145,7 @@ impl<'tcx> PureExpression<'tcx> {
             assert!(!fut, "Encountered disallowed `^&...` in expression: ^&{}", expr);
             expr
         } else {
-            ExprKind::Field(box self, v, f).with_ty(ty)
+            ExprKind::Field(Box::new(self), v, f).with_ty(ty)
         }
     }
     pub fn field(self, v: VariantIdx, f: Field, ty: Ty<'tcx>) -> Self {
@@ -154,7 +154,7 @@ impl<'tcx> PureExpression<'tcx> {
             assert!(v == vid);
             return fields.into_iter().find(|(fd, _)| *fd == f).unwrap().1;
         }
-        ExprKind::Field(box new_self, v, f).with_ty(ty)
+        ExprKind::Field(Box::new(new_self), v, f).with_ty(ty)
     }
     pub fn disc(self, disc: Discr<'tcx>, tcx: TyCtxt<'tcx>) -> Self {
         let variant = Self::from_u128(disc.val, disc.ty);
@@ -219,7 +219,7 @@ impl<'tcx> Neg for PureExpression<'tcx> {
     type Output = Self;
     fn neg(self) -> Self::Output {
         let ty = self.ty;
-        ExprKind::UnOp(UnOpKind::UnOp(UnOp::Neg), box self).with_ty(ty)
+        ExprKind::UnOp(UnOpKind::UnOp(UnOp::Neg), Box::new(self)).with_ty(ty)
     }
 }
 impl<'tcx> std::ops::BitAnd<PureExpression<'tcx>> for PureExpression<'tcx> {
@@ -234,7 +234,7 @@ impl<'tcx> std::ops::BitAnd<PureExpression<'tcx>> for PureExpression<'tcx> {
             (ExprKind::Lit(Lit::Bool(true)), _) | (_, ExprKind::Lit(Lit::Bool(false))) => rhs,
             (_, ExprKind::Lit(Lit::Bool(true))) | (ExprKind::Lit(Lit::Bool(false)), _) => self,
             // Constructor:
-            _ => ExprKind::BinOp(BinOp::And, box self, box rhs).with_ty(ty),
+            _ => ExprKind::BinOp(BinOp::And, Box::new(self), Box::new(rhs)).with_ty(ty),
         }
     }
 }
@@ -250,7 +250,7 @@ impl<'tcx> std::ops::BitOr<PureExpression<'tcx>> for PureExpression<'tcx> {
             (ExprKind::Lit(Lit::Bool(true)), _) | (_, ExprKind::Lit(Lit::Bool(false))) => self,
             (_, ExprKind::Lit(Lit::Bool(true))) | (ExprKind::Lit(Lit::Bool(false)), _) => rhs,
             // Constructor:
-            _ => ExprKind::BinOp(BinOp::Or, box self, box rhs).with_ty(ty),
+            _ => ExprKind::BinOp(BinOp::Or, Box::new(self), Box::new(rhs)).with_ty(ty),
         }
     }
 }

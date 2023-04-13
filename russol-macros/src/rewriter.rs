@@ -1,4 +1,4 @@
-use alloc::vec::Vec;
+use alloc::{vec::Vec, boxed::Box};
 use proc_macro2::{Delimiter, Group, Punct, Spacing, Span, TokenStream, TokenTree};
 use syn::{
     parse::Error, parse_quote, punctuated::Punctuated, spanned::Spanned, visit_mut::VisitMut,
@@ -233,14 +233,14 @@ impl ExpressionRewrite {
         syn::Expr::Paren(syn::ExprParen {
             attrs: Vec::new(),
             paren_token: syn::token::Paren { span: expr.span() },
-            expr: box expr,
+            expr: Box::new(expr),
         })
     }
     fn call_snapshot(expr: syn::Expr) -> syn::ExprMethodCall {
         let span = expr.span();
         syn::ExprMethodCall {
             attrs: Vec::new(),
-            receiver: box Self::wrap_in_paren(expr),
+            receiver: Box::new(Self::wrap_in_paren(expr)),
             dot_token: syn::Token![.](span),
             method: syn::Ident::new("snap", span),
             turbofish: None,
@@ -314,19 +314,19 @@ impl syn::visit_mut::VisitMut for ExpressionRewrite {
             let right = core::mem::replace(&mut *expr.right, syn::Expr::Verbatim(TokenStream::new()));
             let span: Span = left.span().unwrap().after().join(right.span().unwrap().before()).unwrap().into();
             expr.op = syn::BinOp::Eq(syn::Token![==](span));
-            expr.left = box syn::Expr::MethodCall(Self::call_snapshot(left));
-            expr.right = box syn::Expr::MethodCall(Self::call_snapshot(right));
+            expr.left = Box::new(syn::Expr::MethodCall(Self::call_snapshot(left)));
+            expr.right = Box::new(syn::Expr::MethodCall(Self::call_snapshot(right)));
         } else if let syn::Expr::Binary(expr) = node &&
             matches!(expr.op, syn::BinOp::Or(..)) && Self::is_fut_span(expr.op.span())
         {
             let left = core::mem::replace(&mut *expr.left, syn::Expr::Verbatim(TokenStream::new()));
             let span: Span = left.span().unwrap().after().join(expr.right.span().unwrap().before()).unwrap().into();
             expr.op = syn::BinOp::Or(syn::Token![||](span));
-            expr.left = box syn::Expr::Unary(syn::ExprUnary {
+            expr.left = Box::new(syn::Expr::Unary(syn::ExprUnary {
                 attrs: Vec::new(),
                 op: syn::UnOp::Not(syn::Token![!](left.span())),
-                expr: box Self::wrap_in_paren(left),
-            });
+                expr: Box::new(Self::wrap_in_paren(left)),
+            }));
             // Beware that `x ==> y || z` will parse as `(!(x) || y) || z` even though we might want `!(x) || (y || z)`!
         } else if let syn::Expr::Macro(node) = node {
             let tokens = core::mem::take(&mut node.mac.tokens);
@@ -385,7 +385,7 @@ pub struct Lookahead<
 type LaHd<I, P> = Lookahead<
     I,
     (P, P),
-    alloc::boxed::Box<
+    Box<
         dyn Fn(&[Option<<I as Iterator>::Item>], &[Option<<I as Iterator>::Item>]) -> (P, P),
     >,
     2,
@@ -397,7 +397,7 @@ impl<I: Iterator, P> LaHd<I, P> {
             iter,
             popped,
             idx: 0,
-            f: alloc::boxed::Box::new(move |e, s| {
+            f: Box::new(move |e, s| {
                 (
                     (f)(&e[0]),
                     if e.len() == 2 { (f)(&e[1]) } else { (f)(&s[0]) },
