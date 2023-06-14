@@ -449,17 +449,29 @@ impl SuslikProgram {
         let suslik_dir = std::env::var("SUSLIK_DIR")
             .map(std::path::PathBuf::from)
             .unwrap_or_else(|_| {
-                let mut suslik_dir = std::env::current_dir().unwrap();
+                let mut suslik_dir = std::env::current_exe().unwrap();
                 while {
                     suslik_dir.push("suslik");
                     !suslik_dir.exists()
                 } {
                     suslik_dir.pop();
-                    assert!(
-                        suslik_dir.pop(),
-                        "Failed to find suslik dir in parents of {}",
-                        std::env::current_dir().unwrap().to_string_lossy()
-                    );
+                    if !suslik_dir.pop() {
+                        break;
+                    }
+                }
+                if suslik_dir.parent().is_none() {
+                    suslik_dir = std::env::current_dir().unwrap();
+                    while {
+                        suslik_dir.push("suslik");
+                        !suslik_dir.exists()
+                    } {
+                        suslik_dir.pop();
+                        assert!(
+                            suslik_dir.pop(),
+                            "Failed to find suslik dir in parents of {}",
+                            std::env::current_dir().unwrap().to_string_lossy()
+                        );
+                    }
                 }
                 suslik_dir
             });
